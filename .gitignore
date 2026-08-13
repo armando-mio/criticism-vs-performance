@@ -1,0 +1,12 @@
+__pycache__/
+*.pyc
+.pytest_cache/
+.venv/
+venv/
+
+# dati grezzi/derivati: si rigenerano con gli script, non vanno versionati
+data/raw/reddit/*/comments.jsonl
+data/raw/fpl/*/*.csv
+data/silver/*/*.csv
+data/gold/*/*.csv
+!data/**/.gitkeep
