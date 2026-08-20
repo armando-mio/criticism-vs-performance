@@ -1,7 +1,7 @@
-"""Dashboard per esplorare la relazione performance/critica dei giocatori
-del Liverpool nelle due stagioni configurate.
+"""Dashboard to explore the performance vs. criticism relationship for Liverpool
+players across the two configured seasons.
 
-Uso:
+Usage:
     streamlit run dashboard/app.py
 """
 from __future__ import annotations
@@ -16,13 +16,13 @@ import streamlit as st
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from src.common.config import data_dir, load_config, season_ids  # noqa: E402
 
-st.set_page_config(page_title="Performance vs Toxicity - Liverpool", layout="wide")
+st.set_page_config(page_title="Performance vs Criticism - Liverpool", layout="wide")
 
 
 GRANULARITY_CONFIG = {
-    "Mensile": {"file": "player_month_summary.csv", "x_col": "month", "has_points": True},
+    "Monthly": {"file": "player_month_summary.csv", "x_col": "month", "has_points": True},
     "Match week": {"file": "player_gameweek_summary.csv", "x_col": "round", "has_points": True},
-    "Giornaliero": {"file": "player_daily_sentiment.csv", "x_col": "date", "has_points": False},
+    "Daily": {"file": "player_daily_sentiment.csv", "x_col": "date", "has_points": False},
 }
 
 
@@ -46,17 +46,17 @@ def main() -> None:
     seasons = season_ids(cfg)
     team_name = cfg["team"]["name"]
 
-    st.title(f"{team_name}: performance vs critica su Reddit")
+    st.title(f"{team_name}: Performance vs Criticism on Reddit")
     st.caption(
         " / ".join(f"{s} — {cfg['seasons'][s]['label']}" for s in seasons)
     )
 
-    granularity = st.radio("Granularità", list(GRANULARITY_CONFIG.keys()), horizontal=True)
+    granularity = st.radio("Granularity", list(GRANULARITY_CONFIG.keys()), horizontal=True)
     gconf = GRANULARITY_CONFIG[granularity]
 
     data = load_gold_data(seasons, gconf["file"])
     if data.empty:
-        st.warning(f"Nessun dataset '{gconf['file']}' trovato per le stagioni selezionate.")
+        st.warning(f"No dataset '{gconf['file']}' found for the selected seasons.")
         return
 
     all_players = sorted(data["player_name"].dropna().unique())
@@ -64,10 +64,10 @@ def main() -> None:
 
     col_a, col_b = st.columns([1, 2])
     with col_a:
-        selected_seasons = st.multiselect("Stagioni", seasons, default=seasons)
+        selected_seasons = st.multiselect("Seasons", seasons, default=seasons)
     with col_b:
         selected_players = st.multiselect(
-            "Giocatori", all_players, default=[default_player] if default_player else []
+            "Players", all_players, default=[default_player] if default_player else []
         )
 
     x_col = gconf["x_col"]
@@ -76,7 +76,7 @@ def main() -> None:
     ].sort_values(["player_name", "season", x_col])
 
     if filtered.empty:
-        st.info("Seleziona almeno un giocatore per vedere i grafici.")
+        st.info("Select at least one player to view charts.")
         return
 
     for player in selected_players:
@@ -92,24 +92,24 @@ def main() -> None:
         if gconf["has_points"]:
             fig.add_trace(go.Bar(
                 x=player_df[x_label], y=player_df["total_points"],
-                name=f"Punti FPL ({granularity.lower()})", marker_color="#1D9E75", yaxis="y1",
+                name=f"FPL Points ({granularity.lower()})", marker_color="#1D9E75", yaxis="y1",
             ))
         fig.add_trace(go.Scatter(
             x=player_df[x_label], y=player_df["avg_sentiment"],
-            name="Sentiment medio Reddit", mode="lines+markers",
+            name="Average Reddit Sentiment", mode="lines+markers",
             line=dict(color="#D85A30"), yaxis="y2" if gconf["has_points"] else "y1",
         ))
         fig.update_layout(
             title=player,
-            xaxis=dict(title=f"Stagione · {x_col}"),
-            yaxis=dict(title="Punti FPL" if gconf["has_points"] else "Sentiment (-1..1)", side="left"),
+            xaxis=dict(title=f"Season · {x_col}"),
+            yaxis=dict(title="FPL Points" if gconf["has_points"] else "Sentiment (-1..1)", side="left"),
             yaxis2=dict(title="Sentiment (-1..1)", side="right", overlaying="y", range=[-1, 1]) if gconf["has_points"] else None,
             legend=dict(orientation="h", y=1.15),
             height=380,
         )
         st.plotly_chart(fig, use_container_width=True)
 
-        with st.expander(f"Dati grezzi — {player}"):
+        with st.expander(f"Raw data — {player}"):
             st.dataframe(player_df, use_container_width=True)
 
 

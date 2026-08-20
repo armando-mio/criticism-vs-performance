@@ -1,12 +1,12 @@
-"""Aggrega sentiment (mensile, per giocatore) e performance (per gameweek,
-convertita a mensile) in un unico dataset 'gold' per stagione.
+"""Aggregates sentiment (monthly, per player) and performance (per gameweek,
+converted to monthly) into a single 'gold' dataset per season.
 
-Input attesi:
-  - data/raw/fpl/<season>/gameweeks.csv   (da fetch_fpl_season.py)
+Expected inputs:
+  - data/raw/fpl/<season>/gameweeks.csv   (from fetch_fpl_season.py)
   - data/silver/<season>/tagged_comments.csv
-      colonne minime: player_id, created_utc, sentiment_compound
+      minimum columns: player_id, created_utc, sentiment_compound
 
-Output:
+Outputs:
   - data/gold/<season>/player_month_summary.csv
   - data/gold/<season>/player_gameweek_summary.csv
   - data/gold/<season>/player_daily_sentiment.csv
@@ -28,7 +28,7 @@ def _month_key(dt: pd.Series) -> pd.Series:
 
 
 def aggregate_performance(gameweeks_df: pd.DataFrame) -> pd.DataFrame:
-    """Da righe per-gameweek a righe per-giocatore-mese."""
+    """Converts per-gameweek rows to per-player-month rows."""
     df = gameweeks_df.copy()
     df["kickoff_time"] = pd.to_datetime(df["kickoff_time"], utc=True)
     df["month"] = _month_key(df["kickoff_time"])
@@ -49,7 +49,7 @@ def aggregate_performance(gameweeks_df: pd.DataFrame) -> pd.DataFrame:
 
 
 def aggregate_sentiment(tagged_comments_df: pd.DataFrame) -> pd.DataFrame:
-    """Da commenti taggati per-giocatore a sentiment medio per-giocatore-mese."""
+    """Converts per-player tagged comments to average sentiment per player-month."""
     df = tagged_comments_df.copy()
     df["created_dt"] = pd.to_datetime(df["created_utc"], unit="s", utc=True)
     df["month"] = _month_key(df["created_dt"])
@@ -69,7 +69,7 @@ def aggregate_sentiment(tagged_comments_df: pd.DataFrame) -> pd.DataFrame:
 def build_gold_dataset(
     performance_df: pd.DataFrame, sentiment_df: pd.DataFrame
 ) -> pd.DataFrame:
-    """Merge esterno performance + sentiment su (player_id, month)."""
+    """Outer merge of performance + sentiment on (player_id, month)."""
     merged = performance_df.merge(
         sentiment_df, on=["player_id", "month"], how="outer"
     )
@@ -78,7 +78,7 @@ def build_gold_dataset(
 
 
 def _gameweek_calendar(gameweeks_df: pd.DataFrame) -> pd.DataFrame:
-    """Una riga per round, con la data di kickoff della gara Liverpool di quel round."""
+    """One row per round, with the kickoff date of Liverpool's match for that round."""
     df = gameweeks_df.copy()
     df["kickoff_time"] = pd.to_datetime(df["kickoff_time"], utc=True)
     return (
@@ -91,7 +91,7 @@ def _gameweek_calendar(gameweeks_df: pd.DataFrame) -> pd.DataFrame:
 
 
 def aggregate_performance_by_gameweek(gameweeks_df: pd.DataFrame) -> pd.DataFrame:
-    """Da righe per-gameweek a righe per-giocatore-round."""
+    """Converts per-gameweek rows to per-player-round rows."""
     df = gameweeks_df.copy()
     df["kickoff_time"] = pd.to_datetime(df["kickoff_time"], utc=True)
     agg = (
@@ -112,9 +112,9 @@ def aggregate_performance_by_gameweek(gameweeks_df: pd.DataFrame) -> pd.DataFram
 def aggregate_sentiment_by_gameweek(
     tagged_comments_df: pd.DataFrame, gameweeks_df: pd.DataFrame
 ) -> pd.DataFrame:
-    """Assegna ogni commento alla gameweek piu' recente gia' iniziata
-    (finestra: dal kickoff della gameweek N a un istante prima del kickoff
-    N+1), poi calcola sentiment medio per-giocatore-round."""
+    """Assigns each comment to the most recent already-started gameweek
+    (window: from kickoff of gameweek N to just before kickoff of
+    N+1), then computes average sentiment per player-round."""
     comments = tagged_comments_df.copy()
     comments["created_dt"] = pd.to_datetime(
         comments["created_utc"], unit="s", utc=True
@@ -152,8 +152,8 @@ def build_gold_dataset_by_gameweek(
 
 
 def aggregate_sentiment_by_day(tagged_comments_df: pd.DataFrame) -> pd.DataFrame:
-    """Sentiment medio per-giocatore-giorno. Nessuna colonna di performance:
-    i punti FPL non hanno granularita' giornaliera."""
+    """Average sentiment per player-day. No performance columns:
+    FPL points do not have daily granularity."""
     df = tagged_comments_df.copy()
     df["created_dt"] = pd.to_datetime(df["created_utc"], unit="s", utc=True)
     df["date"] = df["created_dt"].dt.tz_localize(None).dt.date.astype(str)
@@ -184,7 +184,7 @@ def run(season_id: str) -> Path:
         sentiment_gw = aggregate_sentiment_by_gameweek(tagged_df, gameweeks_df)
         sentiment_day = aggregate_sentiment_by_day(tagged_df)
     else:
-        print(f"[{season_id}] nessun tagged_comments.csv trovato, gold solo performance")
+        print(f"[{season_id}] no tagged_comments.csv found, gold performance only")
         sentiment = pd.DataFrame(columns=["player_id", "month", "avg_sentiment", "n_comments", "negative_share"])
         sentiment_gw = pd.DataFrame(columns=["player_id", "player_name", "round", "avg_sentiment", "n_comments", "negative_share"])
         sentiment_day = pd.DataFrame(columns=["player_id", "player_name", "date", "avg_sentiment", "n_comments", "negative_share"])
@@ -199,9 +199,9 @@ def run(season_id: str) -> Path:
     gold_gw.to_csv(out_dir / "player_gameweek_summary.csv", index=False)
     sentiment_day.to_csv(out_dir / "player_daily_sentiment.csv", index=False)
 
-    print(f"[{season_id}] gold mensile: {len(gold)} righe")
-    print(f"[{season_id}] gold match week: {len(gold_gw)} righe")
-    print(f"[{season_id}] gold giornaliero: {len(sentiment_day)} righe")
+    print(f"[{season_id}] gold monthly: {len(gold)} rows")
+    print(f"[{season_id}] gold match week: {len(gold_gw)} rows")
+    print(f"[{season_id}] gold daily: {len(sentiment_day)} rows")
     return out_dir / "player_month_summary.csv"
 
 
@@ -211,7 +211,7 @@ if __name__ == "__main__":
     from src.common.config import load_config, season_ids
 
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--season", help="Solo questa stagione. Default: tutte.")
+    parser.add_argument("--season", help="Only this season. Default: all.")
     args = parser.parse_args()
 
     cfg = load_config()

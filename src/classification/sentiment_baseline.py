@@ -1,14 +1,14 @@
-"""Classificazione baseline del sentiment di un commento.
+"""Baseline sentiment classification for a comment.
 
-Usa VADER (vaderSentiment), pensato per testo social/informale - stessa
-famiglia di lessici usata spesso come punto di partenza prima di passare
-a un modello transformer fine-tuned su dati etichettati manualmente.
+Uses VADER (vaderSentiment), designed for social/informal text - the same
+family of lexicons often used as a starting point before moving to a
+transformer model fine-tuned on manually labeled data.
 
-Non richiede training ne' dati etichettati: funziona out-of-the-box,
-il che lo rende adatto come primo passaggio per uno scope piccolo come
-questo (una squadra, due stagioni) prima di investire in labeling +
-validazione (kappa) + fine-tuning, che restano lo step successivo se
-si vuole piu' accuratezza sullo slang specifico dei tifosi.
+Requires no training or labeled data: works out-of-the-box, making it
+well-suited as an initial step for a small scope like this (one team, two
+seasons) before investing in labeling + validation (kappa) + fine-tuning,
+which remain the natural next step if higher accuracy is needed for football
+fan-specific slang.
 """
 from __future__ import annotations
 
@@ -16,13 +16,13 @@ from vaderSentiment.vaderSentiment import SentimentIntensityAnalyzer
 
 _analyzer = SentimentIntensityAnalyzer()
 
-# soglie standard raccomandate dagli autori di VADER
+# standard thresholds recommended by VADER authors
 POSITIVE_THRESHOLD = 0.05
 NEGATIVE_THRESHOLD = -0.05
 
 
 def score_comment(text: str) -> dict:
-    """Ritorna compound score (-1..1) ed etichetta discreta per un commento."""
+    """Returns compound score (-1..1) and discrete label for a comment."""
     if not text or not str(text).strip():
         return {"compound": 0.0, "label": "neutral"}
 

@@ -116,14 +116,14 @@ def fetch_page(
                 body_preview = exc.response.text[:300]
             wait = RETRY_BACKOFF_BASE * (2 ** (attempt - 1))
             print(
-                f"  tentativo {attempt}/{MAX_RETRIES} fallito ({exc}). "
-                f"Risposta: {body_preview!r}. Riprovo tra {wait:.0f}s..."
+                f"  attempt {attempt}/{MAX_RETRIES} failed ({exc}). "
+                f"Response: {body_preview!r}. Retrying in {wait:.0f}s..."
             )
             if attempt < MAX_RETRIES:
                 time.sleep(wait)
 
     raise RuntimeError(
-        f"Impossibile ottenere una pagina dopo {MAX_RETRIES} tentativi "
+        f"Unable to fetch page after {MAX_RETRIES} attempts "
         f"(after={after}, before={before}): {last_error}"
     )
 
@@ -181,14 +181,14 @@ def run(season_id: str, restart: bool = False) -> Path:
 
     if resume_from is not None:
         print(
-            f"[{season_id}] trovato progresso precedente, riprendo da "
-            f"created_utc={resume_from} invece che dall'inizio stagione"
+            f"[{season_id}] found previous progress, resuming from "
+            f"created_utc={resume_from} instead of season start"
         )
         file_mode = "a"
         start_override_epoch = resume_from + 1
     else:
         if restart:
-            print(f"[{season_id}] --restart: riparto dall'inizio stagione")
+            print(f"[{season_id}] --restart: restarting from season start")
         file_mode = "w"
         start_override_epoch = None
 
@@ -208,19 +208,19 @@ def run(season_id: str, restart: bool = False) -> Path:
             f.flush()  # so a crash mid-way doesn't lose more than the few ms in progress
             count += 1
             if count % 500 == 0:
-                print(f"[{season_id}] {count} commenti scaricati in questo run...")
+                print(f"[{season_id}] {count} comments downloaded in this run...")
 
-    print(f"[{season_id}] totale {count} nuovi commenti in questo run -> {out_path}")
+    print(f"[{season_id}] total {count} new comments in this run -> {out_path}")
     return out_path
 
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--season", required=True, help="es. 2024-25")
+    parser.add_argument("--season", required=True, help="e.g. 2024-25")
     parser.add_argument(
         "--restart",
         action="store_true",
-        help="Ignora il progresso salvato e riparte dall'inizio stagione",
+        help="Ignore saved progress and restart from the beginning of the season",
     )
     args = parser.parse_args()
     run(args.season, restart=args.restart)

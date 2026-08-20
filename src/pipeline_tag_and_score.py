@@ -1,11 +1,11 @@
-"""Legge data/raw/reddit/<season>/comments.jsonl, associa ogni commento
-ai giocatori citati e ne calcola il sentiment, scrive il risultato in
+"""Reads data/raw/reddit/<season>/comments.jsonl, matches each comment to the
+mentioned players, computes sentiment scores, and writes the results to
 data/silver/<season>/tagged_comments.csv.
 
-Un commento che cita N giocatori genera N righe (una per player_id),
-cosi' l'aggregazione a valle resta un semplice group-by.
+A comment mentioning N players generates N rows (one per player_id),
+making downstream aggregation a straightforward group-by operation.
 
-Uso:
+Usage:
     python -m src.pipeline_tag_and_score --season 2024-25
 """
 from __future__ import annotations
@@ -27,9 +27,9 @@ def load_raw_comments(season_id: str) -> list[dict]:
     path = data_dir("raw", season_id).parent / "reddit" / season_id / "comments.jsonl"
     if not path.exists():
         raise FileNotFoundError(
-            f"{path} non esiste. Esegui prima "
-            f"'python -m src.ingestion.fetch_reddit_dump --season {season_id}' "
-            "(o genera un dataset demo, vedi scripts/make_demo_reddit_data.py)."
+            f"{path} does not exist. Run "
+            f"'python -m src.ingestion.fetch_reddit_dump --season {season_id}' first "
+            "(or generate a demo dataset, see scripts/make_demo_reddit_data.py)."
         )
     comments = []
     with open(path, "r", encoding="utf-8") as f:
@@ -81,8 +81,8 @@ def run(season_id: str, custom_aliases: dict | None = None) -> Path:
     tagged.to_csv(out_path, index=False)
 
     print(
-        f"[{season_id}] {len(comments)} commenti letti, "
-        f"{len(tagged)} righe taggate (commento x giocatore) -> {out_path}"
+        f"[{season_id}] {len(comments)} comments read, "
+        f"{len(tagged)} tagged rows (comment x player) -> {out_path}"
     )
     return out_path
 

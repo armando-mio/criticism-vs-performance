@@ -1,10 +1,10 @@
-"""Scarica i dati di performance da vaastav/Fantasy-Premier-League e li
-filtra sulla sola squadra configurata (default: Liverpool).
+"""Downloads performance data from vaastav/Fantasy-Premier-League and
+filters for the configured team only (default: Liverpool).
 
-Fonte dati: file statici su raw.githubusercontent.com, nessuna API key,
-nessun rate limit da gestire (non e' un endpoint live).
+Data source: static files on raw.githubusercontent.com, no API key,
+no rate limits to handle (not a live endpoint).
 
-Uso:
+Usage:
     python -m src.ingestion.fetch_fpl_season
     python -m src.ingestion.fetch_fpl_season --season 2025-26
 """
@@ -31,9 +31,9 @@ def _download_csv(url: str) -> pd.DataFrame:
 
 
 def fetch_season(season_id: str, cfg: dict) -> dict[str, Path]:
-    """Scarica e filtra i dati FPL per una singola stagione.
+    """Downloads and filters FPL data for a single season.
 
-    Ritorna i path dei file scritti.
+    Returns the paths of the written files.
     """
     season_cfg = cfg["seasons"][season_id]
     fpl_dir = season_cfg["fpl_season_dir"]
@@ -43,13 +43,13 @@ def fetch_season(season_id: str, cfg: dict) -> dict[str, Path]:
     out_dir = data_dir("raw", None) / "fpl" / season_id
     out_dir.mkdir(parents=True, exist_ok=True)
 
-    # 1) players_raw.csv -> anagrafica giocatori della squadra
-    #    colonna "team" qui e' l'id numerico della squadra, non il nome.
+    # 1) players_raw.csv -> squad players master data
+    #    "team" column here is the numeric team id, not the name.
     players = _download_csv(f"{base_url}/{fpl_dir}/players_raw.csv")
     teams = _download_csv(f"{base_url}/{fpl_dir}/teams.csv")
     team_row = teams[teams["name"] == team_name]
     if team_row.empty:
-        raise ValueError(f"Squadra '{team_name}' non trovata in teams.csv per {season_id}")
+        raise ValueError(f"Team '{team_name}' not found in teams.csv for {season_id}")
     team_id = int(team_row.iloc[0]["id"])
 
     team_players = players[players["team"] == team_id].copy()
@@ -64,8 +64,8 @@ def fetch_season(season_id: str, cfg: dict) -> dict[str, Path]:
     players_path = out_dir / "players.csv"
     team_players.to_csv(players_path, index=False)
 
-    # 2) merged_gw.csv -> statistiche gameweek per gameweek.
-    #    qui la colonna "team" e' gia' il nome squadra in chiaro, si filtra diretto.
+    # 2) merged_gw.csv -> gameweek-by-gameweek statistics.
+    #    here the "team" column is already the team name in plain text, filtered directly.
     gws = _download_csv(f"{base_url}/{fpl_dir}/gws/merged_gw.csv")
     team_gws = gws[gws["team"] == team_name].copy()
 
@@ -73,15 +73,15 @@ def fetch_season(season_id: str, cfg: dict) -> dict[str, Path]:
     team_gws.to_csv(gws_path, index=False)
 
     print(
-        f"[{season_id}] {len(team_players)} giocatori, "
-        f"{len(team_gws)} righe gameweek -> {out_dir}"
+        f"[{season_id}] {len(team_players)} players, "
+        f"{len(team_gws)} gameweek rows -> {out_dir}"
     )
     return {"players": players_path, "gameweeks": gws_path}
 
 
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--season", help="Solo questa stagione (es. 2024-25). Default: tutte.")
+    parser.add_argument("--season", help="Only this season (e.g. 2024-25). Default: all.")
     args = parser.parse_args()
 
     cfg = load_config()
@@ -89,7 +89,7 @@ def main() -> None:
 
     for season_id in seasons:
         if season_id not in cfg["seasons"]:
-            raise SystemExit(f"Stagione sconosciuta: {season_id}")
+            raise SystemExit(f"Unknown season: {season_id}")
         fetch_season(season_id, cfg)
 
 

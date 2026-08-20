@@ -4,7 +4,7 @@ __pycache__/
 .venv/
 venv/
 
-# dati grezzi/derivati: si rigenerano con gli script, non vanno versionati
+# raw
 data/raw/reddit/*/comments.jsonl
 data/raw/fpl/*/*.csv
 data/silver/*/*.csv

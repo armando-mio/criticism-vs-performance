@@ -42,7 +42,7 @@ def test_no_match_returns_empty():
 
 def test_fuzzy_catches_common_typo():
     idx = build_alias_index(make_roster())
-    # "salahh" non e' un match esatto, deve arrivarci il fallback fuzzy
+    # "salahh" is not an exact match, fuzzy fallback must catch it
     assert match_players("salahh should start every game", idx) == [1]
 
 
@@ -52,8 +52,8 @@ def test_fuzzy_disabled_misses_typo():
 
 
 def test_web_name_ending_in_period_still_matches():
-    # regressione: alias che finisce con punteggiatura (es. "Diogo J.")
-    # non deve rompere il controllo di confine-parola
+    # regression: alias ending in punctuation (e.g. "Diogo J.")
+    # must not break the word-boundary check
     roster = pd.DataFrame(
         [{"id": 4, "web_name": "Diogo J.", "first_name": "Diogo", "second_name": "Jota"}]
     )
@@ -63,6 +63,6 @@ def test_web_name_ending_in_period_still_matches():
 
 def test_substring_does_not_false_positive_on_unrelated_word():
     idx = build_alias_index(make_roster())
-    # "arnold" e' cognome di Alexander-Arnold: deve matchare solo l'alias giusto,
-    # non confondersi con parole che contengono "van" (es. "advantage")
+    # "arnold" is Alexander-Arnold's surname: must match only the right alias,
+    # without confusing with words containing "van" (e.g. "advantage")
     assert match_players("what an advantage we have", idx) == []

@@ -150,7 +150,7 @@ def test_fetch_page_raises_after_max_retries(monkeypatch):
         fetch_page(session, "https://fake", "LiverpoolFC", after=1, before=2, limit=100)
         assert False, "should have raised RuntimeError"
     except RuntimeError as exc:
-        assert "2 tentativi" in str(exc)
+        assert "2 attempts" in str(exc)
     assert session.get.call_count == 2
 
 

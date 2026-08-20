@@ -1,17 +1,17 @@
 team:
   name: Liverpool
-  fpl_team_name: "Liverpool"     # valore esatto della colonna "team" in merged_gw.csv
+  fpl_team_name: "Liverpool"     # exact value of the "team" column in merged_gw.csv
   reddit_subreddit: "LiverpoolFC"
 
 seasons:
   2024-25:
-    label: "Stagione dello scudetto"
+    label: "Title-winning season"
     start_date: "2024-08-16"
     end_date: "2025-05-25"
     fpl_season_dir: "2024-25"
 
   2025-26:
-    label: "Stagione attuale, 5° posto"
+    label: "Current season, 5th place"
     start_date: "2025-08-15"
     end_date: "2026-05-24"
     fpl_season_dir: "2025-26"
@@ -21,5 +21,5 @@ fpl:
 
 reddit:
   base_url: "https://arctic-shift.photon-reddit.com/api/comments/search"
-  page_size: 100          # max consentito per richiesta (vedi doc Arctic Shift)
-  request_delay_seconds: 1.0   # essere "considerate" col servizio gratuito
+  page_size: 100          # max allowed per request (see Arctic Shift docs)
+  request_delay_seconds: 1.0   # be considerate with the free service

@@ -1,13 +1,13 @@
-"""ATTENZIONE: genera commenti SINTETICI (frasi template, non veri commenti
-Reddit) per poter testare l'intera pipeline end-to-end senza dover
-raggiungere Arctic Shift.
+"""WARNING: Generates SYNTHETIC comments (templated sentences, not real
+Reddit comments) to test the entire pipeline end-to-end without needing
+access to Arctic Shift.
 
-Non e' una fonte dati reale. Serve solo a verificare che
-pipeline_tag_and_score.py e merge_performance_sentiment.py producano un
-gold dataset sensato, prima di collegare i dati veri raccolti con
+This is not a real data source. It is only meant to verify that
+pipeline_tag_and_score.py and merge_performance_sentiment.py produce a
+meaningful gold dataset before connecting real data collected with
 fetch_reddit_dump.py.
 
-Uso:
+Usage:
     python scripts/make_demo_reddit_data.py --season 2024-25
 """
 from __future__ import annotations
@@ -97,7 +97,7 @@ def main() -> None:
         for c in comments:
             f.write(json.dumps(c) + "\n")
 
-    print(f"[{args.season}] {len(comments)} commenti SINTETICI (demo) -> {out_path}")
+    print(f"[{args.season}] {len(comments)} SYNTHETIC (demo) comments -> {out_path}")
 
 
 if __name__ == "__main__":

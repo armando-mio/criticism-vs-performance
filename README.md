@@ -1,31 +1,30 @@
 # performance-vs-toxicity
 
-Pipeline batch one-shot: relazione tra performance in campo e critica su
-Reddit per i giocatori del Liverpool, in due stagioni chiuse:
+One-shot batch pipeline: analyzing the relationship between on-pitch performance
+and Reddit criticism for Liverpool players across two completed seasons:
 
-- **2024-25** — stagione dello scudetto (16 ago 2024 – 25 mag 2025)
-- **2025-26** — stagione attuale, chiusa al 5° posto (15 ago 2025 – 24 mag 2026)
+- **2024-25** — title-winning season (Aug 16, 2024 – May 25, 2025)
+- **2025-26** — season finished in 5th place (Aug 15, 2025 – May 24, 2026)
 
-Nessuna raccolta continua, nessuno scheduler: si scarica una volta, si
-processa, si esplora in dashboard.
+No continuous scraping, no scheduler: download once, process, and explore in the dashboard.
 
-## Cosa e' stato testato davvero e cosa no
+## Verification Status: What Was Tested and What Was Not
 
-Per essere onesti su cosa puoi fidarti al 100% e cosa va verificato tu:
+To be fully transparent about what is verified and what needs your verification:
 
-| Componente | Stato |
+| Component | Status |
 |---|---|
-| `fetch_fpl_season.py` | **Eseguito con dati reali** in questo ambiente. `data/raw/fpl/` contiene gia' i CSV veri di entrambe le stagioni (roster + gameweek), scaricati da vaastav/Fantasy-Premier-League. |
-| `player_matcher.py` (entity resolution) | Testato con 22 unit test, incluso un bug reale trovato e corretto (alias che finiscono con un punto, es. "Diogo J.", rompevano il match — vedi `test_web_name_ending_in_period_still_matches`). |
-| `sentiment_baseline.py` | Testato, usa VADER (nessun training necessario). |
-| `merge_performance_sentiment.py` | Testato anche contro i dati FPL reali del Liverpool. |
-| `fetch_reddit_dump.py` | Scritto contro la documentazione ufficiale dell'API di Arctic Shift e verificato interrogando l'endpoint reale per confermare lo schema di risposta. La logica di paginazione e' coperta da test con risposte mock. **Non eseguito end-to-end**: `arctic-shift.photon-reddit.com` non e' raggiungibile dalla rete dell'ambiente in cui questo progetto e' stato scritto. Vedi sotto per come lanciarlo. |
-| `dashboard/app.py` | Avviato per davvero (`streamlit run`), risponde HTTP 200 senza errori. Il contenuto visivo va verificato da te con dati reali. |
+| `fetch_fpl_season.py` | **Executed with real data** in this environment. `data/raw/fpl/` already contains the actual CSVs for both seasons (roster + gameweek), downloaded from vaastav/Fantasy-Premier-League. |
+| `player_matcher.py` (entity resolution) | Tested with unit tests, including a real bug found and fixed (aliases ending with a period, e.g. "Diogo J.", broke matching — see `test_web_name_ending_in_period_still_matches`). |
+| `sentiment_baseline.py` | Tested, uses VADER (no training required). |
+| `merge_performance_sentiment.py` | Tested against real Liverpool FPL data. |
+| `fetch_reddit_dump.py` | Written against the official Arctic Shift API documentation and verified against the actual endpoint to confirm the response schema. Pagination logic is covered by tests with mock responses. **Not run end-to-end**: `arctic-shift.photon-reddit.com` was not reachable from the restricted network environment where this project was developed. See below for instructions on running it. |
+| `dashboard/app.py` | Verified with Streamlit (`streamlit run`), responds with HTTP 200 without errors. Visual content can be explored with real or demo data. |
 
-Nella repo consegnata **non ci sono commenti Reddit**, ne' veri ne' finti:
-solo i CSV FPL reali. `scripts/make_demo_reddit_data.py` genera dati
-sintetici (frasi template, chiaramente etichettate) solo per farti
-vedere la pipeline girare end-to-end prima di collegare i dati veri.
+The delivered repository **does not include raw Reddit comments**, neither real nor fake:
+only the real FPL CSVs are pre-populated. `scripts/make_demo_reddit_data.py` generates
+synthetic data (clearly labeled templated sentences) so you can see the pipeline
+run end-to-end before connecting real data.
 
 ## Setup
 
@@ -34,14 +33,14 @@ python -m venv .venv && source .venv/bin/activate
 pip install -r requirements.txt
 ```
 
-## Come eseguire tutto
+## How to Run Everything
 
 ```bash
-# 1. Performance (reale, gia' incluso, ma rieseguibile)
+# 1. Performance (real data, already included, but re-executable)
 python -m src.ingestion.fetch_fpl_season
 
-# 2. Reddit — scarica i commenti veri di r/LiverpoolFC per le due stagioni
-#    (nessun account/OAuth richiesto, solo l'API pubblica di Arctic Shift)
+# 2. Reddit — download real comments from r/LiverpoolFC for both seasons
+#    (no account/OAuth required, only the public Arctic Shift API)
 python -m src.ingestion.fetch_reddit_dump --season 2024-25
 python -m src.ingestion.fetch_reddit_dump --season 2025-26
 
@@ -49,14 +48,14 @@ python -m src.ingestion.fetch_reddit_dump --season 2025-26
 python -m src.pipeline_tag_and_score --season 2024-25
 python -m src.pipeline_tag_and_score --season 2025-26
 
-# 4. Aggregazione (gold)
+# 4. Aggregation (gold)
 python -m src.aggregation.merge_performance_sentiment
 
 # 5. Dashboard
 streamlit run dashboard/app.py
 ```
 
-Per provare tutto SENZA aspettare il passo 2 (dati sintetici, vedi sopra):
+To test everything WITHOUT waiting for step 2 (using synthetic data, see above):
 
 ```bash
 python scripts/make_demo_reddit_data.py --season 2024-25
@@ -67,20 +66,20 @@ python -m src.aggregation.merge_performance_sentiment
 streamlit run dashboard/app.py
 ```
 
-## Test
+## Tests
 
 ```bash
 pytest tests/ -v
 ```
 
-## Struttura
+## Project Structure
 
 ```
 performance-vs-toxicity/
-├── config/seasons.yaml          # date stagioni, squadra, endpoint
+├── config/seasons.yaml          # season dates, team, endpoints
 ├── data/
-│   ├── raw/fpl/<season>/        # CSV reali (gia' inclusi)
-│   ├── raw/reddit/<season>/     # comments.jsonl (da generare, vedi sopra)
+│   ├── raw/fpl/<season>/        # real CSVs (already included)
+│   ├── raw/reddit/<season>/     # comments.jsonl (to generate, see above)
 │   ├── silver/<season>/         # tagged_comments.csv
 │   └── gold/<season>/           # player_month_summary.csv
 ├── src/
@@ -88,26 +87,24 @@ performance-vs-toxicity/
 │   ├── entity_resolution/        # player_matcher.py
 │   ├── classification/           # sentiment_baseline.py
 │   ├── aggregation/              # merge_performance_sentiment.py
-│   └── pipeline_tag_and_score.py # collega entity resolution + sentiment
-├── scripts/make_demo_reddit_data.py   # dati sintetici, solo per testare
-├── dashboard/app.py              # Streamlit
+│   └── pipeline_tag_and_score.py # connects entity resolution + sentiment
+├── scripts/make_demo_reddit_data.py   # synthetic data generator for testing
+├── dashboard/app.py              # Streamlit dashboard
 └── tests/
 ```
 
-## Limitazioni note (leggi prima di fidarti troppo dei numeri)
+## Known Limitations (read before drawing strong conclusions)
 
-- **Entity resolution non e' perfetta.** Alias derivati dal roster FPL +
-  fallback fuzzy per refusi comuni. Sarcasmo, nickname non ufficiali,
-  commenti che criticano "la squadra" senza nominare nessuno restano
-  fuori scope. Se vuoi piu' precisione, arricchisci `custom_aliases` in
-  `config/seasons.yaml` (attualmente non popolato — aggiungilo se serve).
-- **VADER e' un baseline, non un modello fine-tuned.** Buono per farsi
-  un'idea rapida, meno accurato dello slang specifico dei tifosi di
-  calcio rispetto a un transformer addestrato su dati etichettati (lo
-  step naturale successivo, se vuoi investire in labeling + kappa).
-- **`avg_sentiment` per mese puo' avere pochissimi commenti** in mesi con
-  poca attivita' — controlla sempre `n_comments` prima di trarre
-  conclusioni da una media.
-- **Arctic Shift e' un servizio gratuito senza garanzie di uptime.** Se
-  `fetch_reddit_dump.py` va in timeout su una finestra ampia, riducila
-  o riprova — non e' un bug dello script.
+- **Entity resolution is not perfect.** Aliases are derived from the FPL roster +
+  fuzzy fallback for common typos. Sarcasm, unofficial nicknames, and comments
+  criticizing "the team" without naming individuals remain out of scope. For higher
+  precision, expand `custom_aliases` in `config/seasons.yaml` (currently unpopulated — add if needed).
+- **VADER is a baseline, not a fine-tuned model.** Good for quick insights, but
+  less accurate for football fan slang compared to a transformer fine-tuned on
+  labeled domain data (the natural next step if you want to invest in labeling + kappa).
+- **`avg_sentiment` per month may have very few comments** in months with low activity
+  — always check `n_comments` before drawing conclusions from an average.
+- **Arctic Shift is a free service without uptime guarantees.** If
+  `fetch_reddit_dump.py` times out over a wide window, reduce the window or retry
+  — this is a service limitation, not a script bug.
+

@@ -1,8 +1,8 @@
-"""Caricamento centralizzato di config/seasons.yaml.
+"""Centralized loading of config/seasons.yaml.
 
-Ogni script del progetto passa da qui invece di leggere il file
-direttamente, cosi' se cambia la struttura dello yaml si aggiorna
-in un solo punto.
+Every script in the project imports configuration through this module
+instead of reading the file directly, ensuring any changes to the YAML
+structure only need to be updated in one place.
 """
 from __future__ import annotations
 
@@ -16,10 +16,10 @@ CONFIG_PATH = PROJECT_ROOT / "config" / "seasons.yaml"
 
 
 def load_config(config_path: Path | str = CONFIG_PATH) -> dict[str, Any]:
-    """Carica e valida (minimamente) config/seasons.yaml."""
+    """Loads and performs minimal validation on config/seasons.yaml."""
     path = Path(config_path)
     if not path.exists():
-        raise FileNotFoundError(f"Config non trovata: {path}")
+        raise FileNotFoundError(f"Config not found: {path}")
 
     with open(path, "r", encoding="utf-8") as f:
         cfg = yaml.safe_load(f)
@@ -27,23 +27,23 @@ def load_config(config_path: Path | str = CONFIG_PATH) -> dict[str, Any]:
     required_top_level = {"team", "seasons", "fpl", "reddit"}
     missing = required_top_level - cfg.keys()
     if missing:
-        raise ValueError(f"Chiavi mancanti in seasons.yaml: {missing}")
+        raise ValueError(f"Missing keys in seasons.yaml: {missing}")
 
     for season_id, season_cfg in cfg["seasons"].items():
         required = {"start_date", "end_date", "fpl_season_dir"}
         missing_season = required - season_cfg.keys()
         if missing_season:
-            raise ValueError(f"Stagione {season_id}: chiavi mancanti {missing_season}")
+            raise ValueError(f"Season {season_id}: missing keys {missing_season}")
 
     return cfg
 
 
 def season_ids(cfg: dict[str, Any]) -> list[str]:
-    """Ritorna gli id di stagione in ordine cronologico (es. ['2024-25', '2025-26'])."""
+    """Returns season IDs in chronological order (e.g. ['2024-25', '2025-26'])."""
     return sorted(cfg["seasons"].keys())
 
 
 def data_dir(kind: str, season_id: str | None = None) -> Path:
-    """Path standard sotto data/raw|silver|gold, opzionalmente per una stagione."""
+    """Standard path under data/raw|silver|gold, optionally for a specific season."""
     base = PROJECT_ROOT / "data" / kind
     return base / season_id if season_id else base
