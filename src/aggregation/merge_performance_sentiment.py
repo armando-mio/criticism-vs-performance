@@ -30,7 +30,7 @@ def _month_key(dt: pd.Series) -> pd.Series:
 def aggregate_performance(gameweeks_df: pd.DataFrame) -> pd.DataFrame:
     """Converts per-gameweek rows to per-player-month rows."""
     df = gameweeks_df.copy()
-    df["kickoff_time"] = pd.to_datetime(df["kickoff_time"], utc=True)
+    df["kickoff_time"] = pd.to_datetime(df["kickoff_time"], utc=True).astype("datetime64[ns, UTC]")
     df["month"] = _month_key(df["kickoff_time"])
 
     agg = (
@@ -80,7 +80,7 @@ def build_gold_dataset(
 def _gameweek_calendar(gameweeks_df: pd.DataFrame) -> pd.DataFrame:
     """One row per round, with the kickoff date of Liverpool's match for that round."""
     df = gameweeks_df.copy()
-    df["kickoff_time"] = pd.to_datetime(df["kickoff_time"], utc=True)
+    df["kickoff_time"] = pd.to_datetime(df["kickoff_time"], utc=True).astype("datetime64[ns, UTC]")
     return (
         df.groupby("round")["kickoff_time"]
         .min()
@@ -93,7 +93,7 @@ def _gameweek_calendar(gameweeks_df: pd.DataFrame) -> pd.DataFrame:
 def aggregate_performance_by_gameweek(gameweeks_df: pd.DataFrame) -> pd.DataFrame:
     """Converts per-gameweek rows to per-player-round rows."""
     df = gameweeks_df.copy()
-    df["kickoff_time"] = pd.to_datetime(df["kickoff_time"], utc=True)
+    df["kickoff_time"] = pd.to_datetime(df["kickoff_time"], utc=True).astype("datetime64[ns, UTC]")
     agg = (
         df.groupby(["element", "name", "round"])
         .agg(
@@ -118,7 +118,7 @@ def aggregate_sentiment_by_gameweek(
     comments = tagged_comments_df.copy()
     comments["created_dt"] = pd.to_datetime(
         comments["created_utc"], unit="s", utc=True
-    ).astype("datetime64[us, UTC]")
+    ).astype("datetime64[ns, UTC]")
 
     calendar = _gameweek_calendar(gameweeks_df)
     comments = comments.sort_values("created_dt")
