@@ -131,7 +131,7 @@ def aggregate_sentiment_by_gameweek(
     tagged_with_gw["round"] = tagged_with_gw["round"].astype(int)
 
     agg = (
-        tagged_with_gw.groupby(["player_id", "player_name", "round"])
+        tagged_with_gw.groupby(["player_id", "round"])
         .agg(
             avg_sentiment=("sentiment_compound", "mean"),
             n_comments=("sentiment_compound", "count"),
@@ -146,7 +146,7 @@ def build_gold_dataset_by_gameweek(
     performance_df: pd.DataFrame, sentiment_df: pd.DataFrame
 ) -> pd.DataFrame:
     merged = performance_df.merge(
-        sentiment_df, on=["player_id", "player_name", "round"], how="outer"
+        sentiment_df, on=["player_id", "round"], how="outer"
     )
     return merged.sort_values(["player_id", "round"]).reset_index(drop=True)
 
