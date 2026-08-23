@@ -114,6 +114,12 @@ def match_players(
         for token in tokens:
             if len(token) < MIN_FUZZY_ALIAS_LEN:
                 continue
+            # first letter must match: a genuine typo (e.g. "salahh") never
+            # changes the first letter, while a common word that happens to
+            # closely resemble a short surname (e.g. "right" vs "Wright")
+            # almost always does - this is the most frequent false-positive case
+            if token[0] != alias[0]:
+                continue
             if fuzz.ratio(alias, token) >= fuzzy_threshold:
                 matched.add(pid)
                 break
