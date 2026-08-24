@@ -35,6 +35,11 @@ GRANULARITY_CONFIG = {
 CORR_COLUMNS = ["total_points", "goals_scored", "assists", "minutes",
                 "avg_sentiment", "n_comments", "negative_share"]
 
+def _friendly_error_message(exc: Exception) -> str:
+    msg = str(exc).lower()
+    if any(kw in msg for kw in ["expired", "invalid access token", "unauthorized", "401", "authentication"]):
+        return "🔒 Databricks token expired. Please contact the page admin."
+    return "⚠️ Could not connect to the data source. Please contact the page admin."
 
 @st.cache_data(ttl=3600)
 def load_gold_data(table_name: str) -> pd.DataFrame:
@@ -93,12 +98,20 @@ def main() -> None:
     granularity = st.radio("Granularity", list(GRANULARITY_CONFIG.keys()), horizontal=True)
     gconf = GRANULARITY_CONFIG[granularity]
 
-    data = load_gold_data(gconf["table"])
+    try:
+        data = load_gold_data(gconf["table"])
+    except Exception as exc:
+        st.error(_friendly_error_message(exc))
+        st.stop()
     if data.empty:
         st.warning(f"No data found in table '{gconf['table']}'.")
         return
 
-    eligible = get_cross_season_players(seasons)
+    try:
+        eligible = get_cross_season_players(seasons)
+    except Exception as exc:
+        st.error(_friendly_error_message(exc))
+        st.stop()
     all_players = sorted(p for p in data["player_name"].dropna().unique() if p in eligible)
     default_player = all_players[0] if all_players else None
 
