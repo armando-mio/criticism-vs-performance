@@ -14,7 +14,6 @@ Outputs:
 from __future__ import annotations
 
 import sys
-from datetime import datetime, timezone
 from pathlib import Path
 
 import pandas as pd
@@ -27,9 +26,25 @@ def _month_key(dt: pd.Series) -> pd.Series:
     return dt.dt.tz_localize(None).dt.to_period("M").astype(str)
 
 
+EXCLUDED_PERFORMANCE_NAMES = {"Diogo Teixeira da Silva"}  # Diogo Jota, out of respect - see silver
+
+NAME_CANONICALIZATION = {
+    # same person, name spelled differently across seasons in FPL data
+    "Luis Díaz Marulanda": "Luis Díaz",
+    "Alisson Ramses Becker": "Alisson Becker",
+    "Treymaurice Nyoni": "Trey Nyoni",
+}
+
+
+def _clean_names(df: pd.DataFrame) -> pd.DataFrame:
+    df = df[~df["name"].isin(EXCLUDED_PERFORMANCE_NAMES)].copy()
+    df["name"] = df["name"].replace(NAME_CANONICALIZATION)
+    return df
+
+
 def aggregate_performance(gameweeks_df: pd.DataFrame) -> pd.DataFrame:
-    """Converts per-gameweek rows to per-player-month rows."""
-    df = gameweeks_df.copy()
+    """From per-gameweek rows to per-player-month rows."""
+    df = _clean_names(gameweeks_df)
     df["kickoff_time"] = pd.to_datetime(df["kickoff_time"], utc=True).astype("datetime64[ns, UTC]")
     df["month"] = _month_key(df["kickoff_time"])
 
@@ -49,7 +64,7 @@ def aggregate_performance(gameweeks_df: pd.DataFrame) -> pd.DataFrame:
 
 
 def aggregate_sentiment(tagged_comments_df: pd.DataFrame) -> pd.DataFrame:
-    """Converts per-player tagged comments to average sentiment per player-month."""
+    """From tagged comments per player to average sentiment per player-month."""
     df = tagged_comments_df.copy()
     df["created_dt"] = pd.to_datetime(df["created_utc"], unit="s", utc=True)
     df["month"] = _month_key(df["created_dt"])
@@ -69,7 +84,6 @@ def aggregate_sentiment(tagged_comments_df: pd.DataFrame) -> pd.DataFrame:
 def build_gold_dataset(
     performance_df: pd.DataFrame, sentiment_df: pd.DataFrame
 ) -> pd.DataFrame:
-    """Outer merge of performance + sentiment on (player_id, month)."""
     merged = performance_df.merge(
         sentiment_df, on=["player_id", "month"], how="outer"
     )
@@ -77,8 +91,7 @@ def build_gold_dataset(
     return merged
 
 
-def _gameweek_calendar(gameweeks_df: pd.DataFrame) -> pd.DataFrame:
-    """One row per round, with the kickoff date of Liverpool's match for that round."""
+def _gameweek_calendar(gameweeks_df):
     df = gameweeks_df.copy()
     df["kickoff_time"] = pd.to_datetime(df["kickoff_time"], utc=True).astype("datetime64[ns, UTC]")
     return (
@@ -90,9 +103,11 @@ def _gameweek_calendar(gameweeks_df: pd.DataFrame) -> pd.DataFrame:
     )
 
 
-def aggregate_performance_by_gameweek(gameweeks_df: pd.DataFrame) -> pd.DataFrame:
-    """Converts per-gameweek rows to per-player-round rows."""
-    df = gameweeks_df.copy()
+def aggregate_performance_by_gameweek(gameweeks_df, teams_df=None):
+    """teams_df: FPL teams.csv DataFrame (columns id, name) to resolve
+    opponent_team (numeric id) into a readable name. If omitted, the
+    'opponent' column is omitted."""
+    df = _clean_names(gameweeks_df)
     df["kickoff_time"] = pd.to_datetime(df["kickoff_time"], utc=True).astype("datetime64[ns, UTC]")
     agg = (
         df.groupby(["element", "name", "round"])
@@ -102,34 +117,29 @@ def aggregate_performance_by_gameweek(gameweeks_df: pd.DataFrame) -> pd.DataFram
             goals_scored=("goals_scored", "sum"),
             assists=("assists", "sum"),
             minutes=("minutes", "sum"),
+            opponent_team=("opponent_team", "first"),
+            was_home=("was_home", "first"),
         )
         .reset_index()
         .rename(columns={"element": "player_id", "name": "player_name"})
     )
+    if teams_df is not None:
+        id_to_name = dict(zip(teams_df["id"], teams_df["name"]))
+        agg["opponent"] = agg["opponent_team"].map(id_to_name)
+    agg = agg.drop(columns=["opponent_team"])
     return agg
 
 
-def aggregate_sentiment_by_gameweek(
-    tagged_comments_df: pd.DataFrame, gameweeks_df: pd.DataFrame
-) -> pd.DataFrame:
-    """Assigns each comment to the most recent already-started gameweek
-    (window: from kickoff of gameweek N to just before kickoff of
-    N+1), then computes average sentiment per player-round."""
+def aggregate_sentiment_by_gameweek(tagged_comments_df, gameweeks_df):
     comments = tagged_comments_df.copy()
-    comments["created_dt"] = pd.to_datetime(
-        comments["created_utc"], unit="s", utc=True
-    ).astype("datetime64[ns, UTC]")
-
+    comments["created_dt"] = pd.to_datetime(comments["created_utc"], unit="s", utc=True).astype("datetime64[ns, UTC]")
     calendar = _gameweek_calendar(gameweeks_df)
     comments = comments.sort_values("created_dt")
-
     tagged_with_gw = pd.merge_asof(
-        comments, calendar.sort_values("gw_date"),
-        left_on="created_dt", right_on="gw_date", direction="backward",
+        comments, calendar.sort_values("gw_date"), left_on="created_dt", right_on="gw_date", direction="backward"
     )
     tagged_with_gw = tagged_with_gw.dropna(subset=["round"])
     tagged_with_gw["round"] = tagged_with_gw["round"].astype(int)
-
     agg = (
         tagged_with_gw.groupby(["player_id", "round"])
         .agg(
@@ -142,22 +152,15 @@ def aggregate_sentiment_by_gameweek(
     return agg
 
 
-def build_gold_dataset_by_gameweek(
-    performance_df: pd.DataFrame, sentiment_df: pd.DataFrame
-) -> pd.DataFrame:
-    merged = performance_df.merge(
-        sentiment_df, on=["player_id", "round"], how="outer"
-    )
+def build_gold_dataset_by_gameweek(performance_df, sentiment_df):
+    merged = performance_df.merge(sentiment_df, on=["player_id", "round"], how="outer")
     return merged.sort_values(["player_id", "round"]).reset_index(drop=True)
 
 
-def aggregate_sentiment_by_day(tagged_comments_df: pd.DataFrame) -> pd.DataFrame:
-    """Average sentiment per player-day. No performance columns:
-    FPL points do not have daily granularity."""
+def aggregate_sentiment_by_day(tagged_comments_df):
     df = tagged_comments_df.copy()
     df["created_dt"] = pd.to_datetime(df["created_utc"], unit="s", utc=True)
     df["date"] = df["created_dt"].dt.tz_localize(None).dt.date.astype(str)
-
     agg = (
         df.groupby(["player_id", "player_name", "date"])
         .agg(
@@ -176,7 +179,10 @@ def run(season_id: str) -> Path:
 
     gameweeks_df = pd.read_csv(gw_path)
     performance = aggregate_performance(gameweeks_df)
-    performance_gw = aggregate_performance_by_gameweek(gameweeks_df)
+
+    teams_path = data_dir("raw", season_id).parent / "fpl" / season_id / "teams.csv"
+    teams_df = pd.read_csv(teams_path) if teams_path.exists() else None
+    performance_gw = aggregate_performance_by_gameweek(gameweeks_df, teams_df)
 
     if tagged_path.exists():
         tagged_df = pd.read_csv(tagged_path)
@@ -184,9 +190,8 @@ def run(season_id: str) -> Path:
         sentiment_gw = aggregate_sentiment_by_gameweek(tagged_df, gameweeks_df)
         sentiment_day = aggregate_sentiment_by_day(tagged_df)
     else:
-        print(f"[{season_id}] no tagged_comments.csv found, gold performance only")
         sentiment = pd.DataFrame(columns=["player_id", "month", "avg_sentiment", "n_comments", "negative_share"])
-        sentiment_gw = pd.DataFrame(columns=["player_id", "player_name", "round", "avg_sentiment", "n_comments", "negative_share"])
+        sentiment_gw = pd.DataFrame(columns=["player_id", "round", "avg_sentiment", "n_comments", "negative_share"])
         sentiment_day = pd.DataFrame(columns=["player_id", "player_name", "date", "avg_sentiment", "n_comments", "negative_share"])
 
     gold = build_gold_dataset(performance, sentiment)
@@ -199,15 +204,14 @@ def run(season_id: str) -> Path:
     gold_gw.to_csv(out_dir / "player_gameweek_summary.csv", index=False)
     sentiment_day.to_csv(out_dir / "player_daily_sentiment.csv", index=False)
 
-    print(f"[{season_id}] gold monthly: {len(gold)} rows")
-    print(f"[{season_id}] gold match week: {len(gold_gw)} rows")
-    print(f"[{season_id}] gold daily: {len(sentiment_day)} rows")
+    print(f"[{season_id}] monthly gold: {len(gold)} rows")
+    print(f"[{season_id}] match week gold: {len(gold_gw)} rows")
+    print(f"[{season_id}] daily gold: {len(sentiment_day)} rows")
     return out_dir / "player_month_summary.csv"
 
 
 if __name__ == "__main__":
     import argparse
-
     from src.common.config import load_config, season_ids
 
     parser = argparse.ArgumentParser(description=__doc__)
