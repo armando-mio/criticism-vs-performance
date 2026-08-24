@@ -65,7 +65,12 @@ def _season_shade(shades: list[str], seasons: list[str], season: str) -> str:
 
 
 def render_correlation_matrix(player_df: pd.DataFrame, player: str) -> None:
-    corr = player_df[CORR_COLUMNS].corr()
+    numeric = player_df[CORR_COLUMNS]
+    varying_cols = [c for c in CORR_COLUMNS if numeric[c].nunique(dropna=True) > 1]
+    if len(varying_cols) < 2:
+        st.info(f"Not enough variation in {player}'s stats to compute a correlation matrix.")
+        return
+    corr = numeric[varying_cols].corr()
     fig = go.Figure(go.Heatmap(
         z=corr.values, x=corr.columns, y=corr.columns,
         zmin=-1, zmax=1, colorscale="RdBu", reversescale=True,
