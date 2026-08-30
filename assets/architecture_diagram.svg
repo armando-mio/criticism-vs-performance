@@ -1,0 +1,242 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 450" width="100%" height="100%" style="background:#090d16; font-family:-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;">
+  <defs>
+    <!-- Background Gradients for Containers -->
+    <linearGradient id="bronzeBoxGrad" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#3d210b" stop-opacity="0.45"/>
+      <stop offset="100%" stop-color="#1e1308" stop-opacity="0.2"/>
+    </linearGradient>
+    <linearGradient id="silverBoxGrad" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#334155" stop-opacity="0.4"/>
+      <stop offset="100%" stop-color="#0f172a" stop-opacity="0.2"/>
+    </linearGradient>
+    <linearGradient id="goldBoxGrad" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#422006" stop-opacity="0.45"/>
+      <stop offset="100%" stop-color="#1c1206" stop-opacity="0.2"/>
+    </linearGradient>
+    <linearGradient id="servingBoxGrad" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#082f49" stop-opacity="0.45"/>
+      <stop offset="100%" stop-color="#0b1329" stop-opacity="0.2"/>
+    </linearGradient>
+
+    <!-- Node Card Gradient -->
+    <linearGradient id="cardGrad" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#1e293b"/>
+      <stop offset="100%" stop-color="#0f172a"/>
+    </linearGradient>
+
+    <!-- Markers for Arrows -->
+    <marker id="markerBronze" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1.5 L 8 5 L 0 8.5 z" fill="#ea580c"/>
+    </marker>
+    <marker id="markerSilver" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1.5 L 8 5 L 0 8.5 z" fill="#94a3b8"/>
+    </marker>
+    <marker id="markerGold" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1.5 L 8 5 L 0 8.5 z" fill="#f59e0b"/>
+    </marker>
+    <marker id="markerServing" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1.5 L 8 5 L 0 8.5 z" fill="#38bdf8"/>
+    </marker>
+
+    <!-- Card Shadow -->
+    <filter id="shadow" x="-10%" y="-10%" width="120%" height="120%">
+      <feDropShadow dx="0" dy="3" stdDeviation="4" flood-color="#000000" flood-opacity="0.45"/>
+    </filter>
+  </defs>
+
+  <!-- ==================== 1. BRONZE INGESTION ==================== -->
+  <g transform="translate(30, 25)">
+    <!-- Stage Container (270 x 400) -->
+    <rect width="270" height="400" rx="12" fill="url(#bronzeBoxGrad)" stroke="#ea580c" stroke-width="1.5" stroke-dasharray="5,4"/>
+    <rect x="25" y="-13" width="220" height="26" rx="6" fill="#9a3412" stroke="#ea580c" stroke-width="1"/>
+    <text x="135" y="4" text-anchor="middle" fill="#ffffff" font-size="11.5" font-weight="700" letter-spacing="0.5">1. BRONZE INGESTION</text>
+
+    <!-- Source FPL (Centered at x=72.5) -->
+    <g filter="url(#shadow)" transform="translate(15, 25)">
+      <rect width="115" height="60" rx="7" fill="url(#cardGrad)" stroke="#475569" stroke-width="1"/>
+      <text x="57.5" y="24" text-anchor="middle" fill="#ffffff" font-size="11" font-weight="700">FPL Match Data</text>
+      <text x="57.5" y="42" text-anchor="middle" fill="#ffffff" font-size="9">Player &amp; GW Stats</text>
+      <text x="57.5" y="53" text-anchor="middle" fill="#ffffff" font-size="8">Official FPL Archive</text>
+    </g>
+
+    <!-- Source Reddit (Centered at x=197.5) -->
+    <g filter="url(#shadow)" transform="translate(140, 25)">
+      <rect width="115" height="60" rx="7" fill="url(#cardGrad)" stroke="#475569" stroke-width="1"/>
+      <text x="57.5" y="24" text-anchor="middle" fill="#ffffff" font-size="11" font-weight="700">Reddit Comments</text>
+      <text x="57.5" y="42" text-anchor="middle" fill="#ffffff" font-size="9">r/LiverpoolFC Feed</text>
+      <text x="57.5" y="53" text-anchor="middle" fill="#ffffff" font-size="8">Arctic Shift Stream</text>
+    </g>
+
+    <!-- Down Arrows into Storage (Bronze) -->
+    <path d="M 72.5 85 L 72.5 140" fill="none" stroke="#ea580c" stroke-width="1.5" marker-end="url(#markerBronze)"/>
+    <path d="M 197.5 85 L 197.5 140" fill="none" stroke="#ea580c" stroke-width="1.5" marker-end="url(#markerBronze)"/>
+
+    <!-- Bronze Storage Destination (Centered at x=135, width=240) -->
+    <g filter="url(#shadow)" transform="translate(15, 145)">
+      <rect width="240" height="230" rx="8" fill="#1c130b" stroke="#ea580c" stroke-width="1.5"/>
+      <text x="120" y="32" text-anchor="middle" fill="#ffffff" font-size="12" font-weight="700">Raw Data Lake Storage</text>
+      
+      <rect x="20" y="46" width="200" height="26" rx="4" fill="#0c0a09" stroke="#9a3412" stroke-width="1"/>
+      <text x="120" y="63" text-anchor="middle" fill="#ffffff" font-size="10" font-weight="600">ADLS Gen2 &amp; Unity Catalog</text>
+
+      <text x="120" y="102" text-anchor="middle" fill="#ffffff" font-size="10" font-weight="700">Cloud Storage Layer</text>
+      <text x="120" y="122" text-anchor="middle" fill="#ffffff" font-size="9">Scalable Azure object storage</text>
+      <text x="120" y="138" text-anchor="middle" fill="#ffffff" font-size="9">housing raw CSV and JSONL files</text>
+
+      <line x1="25" y1="156" x2="215" y2="156" stroke="#7c2d12" stroke-width="0.8"/>
+
+      <text x="120" y="178" text-anchor="middle" fill="#ffffff" font-size="10" font-weight="700">Data Governance</text>
+      <text x="120" y="196" text-anchor="middle" fill="#ffffff" font-size="9">Access control &amp; audit tracking</text>
+      <text x="120" y="210" text-anchor="middle" fill="#ffffff" font-size="8.5">Managed Identities with zero keys</text>
+    </g>
+  </g>
+
+  <!-- ==================== 2. SILVER PROCESSING ==================== -->
+  <g transform="translate(320, 25)">
+    <!-- Stage Container (270 x 400) -->
+    <rect width="270" height="400" rx="12" fill="url(#silverBoxGrad)" stroke="#94a3b8" stroke-width="1.5" stroke-dasharray="5,4"/>
+    <rect x="25" y="-13" width="220" height="26" rx="6" fill="#475569" stroke="#94a3b8" stroke-width="1"/>
+    <text x="135" y="4" text-anchor="middle" fill="#ffffff" font-size="11.5" font-weight="700" letter-spacing="0.5">2. SILVER PROCESSING</text>
+
+    <!-- Spark ETL Driver (Centered at x=135, width=240) -->
+    <g filter="url(#shadow)" transform="translate(15, 25)">
+      <rect width="240" height="60" rx="7" fill="url(#cardGrad)" stroke="#94a3b8" stroke-width="1.2"/>
+      <text x="120" y="26" text-anchor="middle" fill="#ffffff" font-size="11.5" font-weight="700">PySpark Distributed ETL</text>
+      <text x="120" y="44" text-anchor="middle" fill="#ffffff" font-size="9">Cleans &amp; tokenizes raw comments</text>
+      <text x="120" y="55" text-anchor="middle" fill="#ffffff" font-size="8">In-memory parallel processing</text>
+    </g>
+
+    <!-- Parallel UDFs (Centered at x=72.5 and x=197.5) -->
+    <g filter="url(#shadow)" transform="translate(15, 115)">
+      <rect width="115" height="70" rx="7" fill="#111c2e" stroke="#94a3b8" stroke-width="1"/>
+      <text x="57.5" y="28" text-anchor="middle" fill="#ffffff" font-size="10" font-weight="700">Entity Matcher</text>
+      <text x="57.5" y="47" text-anchor="middle" fill="#ffffff" font-size="8.5">Player Name</text>
+      <text x="57.5" y="59" text-anchor="middle" fill="#ffffff" font-size="8.5">Resolution UDF</text>
+    </g>
+
+    <g filter="url(#shadow)" transform="translate(140, 115)">
+      <rect width="115" height="70" rx="7" fill="#111c2e" stroke="#94a3b8" stroke-width="1"/>
+      <text x="57.5" y="28" text-anchor="middle" fill="#ffffff" font-size="10" font-weight="700">Sentiment NLP</text>
+      <text x="57.5" y="47" text-anchor="middle" fill="#ffffff" font-size="8.5">VADER Lexical</text>
+      <text x="57.5" y="59" text-anchor="middle" fill="#ffffff" font-size="8.5">Scoring UDF</text>
+    </g>
+
+    <!-- Down Arrows into UDFs (Silver) -->
+    <path d="M 72.5 85 L 72.5 110" fill="none" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#markerSilver)"/>
+    <path d="M 197.5 85 L 197.5 110" fill="none" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#markerSilver)"/>
+
+    <!-- Down Arrows from UDFs into Silver Delta (Silver) -->
+    <path d="M 72.5 185 L 72.5 210" fill="none" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#markerSilver)"/>
+    <path d="M 197.5 185 L 197.5 210" fill="none" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#markerSilver)"/>
+
+    <!-- Silver Delta Table (Centered at x=135, width=240) -->
+    <g filter="url(#shadow)" transform="translate(15, 215)">
+      <rect width="240" height="160" rx="8" fill="#141c28" stroke="#94a3b8" stroke-width="1.5"/>
+      <text x="120" y="32" text-anchor="middle" fill="#ffffff" font-size="12" font-weight="700">Enriched Silver Lakehouse</text>
+      
+      <rect x="20" y="48" width="200" height="26" rx="4" fill="#090f17" stroke="#475569" stroke-width="1"/>
+      <text x="120" y="65" text-anchor="middle" fill="#ffffff" font-size="10" font-weight="600">Delta Lake Storage Format</text>
+
+      <text x="120" y="104" text-anchor="middle" fill="#ffffff" font-size="10" font-weight="700">ACID Delta Table</text>
+      <text x="120" y="124" text-anchor="middle" fill="#ffffff" font-size="9">Structured comment-level data</text>
+      <text x="120" y="138" text-anchor="middle" fill="#ffffff" font-size="9">with identified players &amp; sentiment</text>
+      <text x="120" y="150" text-anchor="middle" fill="#ffffff" font-size="8.5">Optimized columnar Parquet + Log</text>
+    </g>
+  </g>
+
+  <!-- ==================== 3. GOLD AGGREGATION ==================== -->
+  <g transform="translate(610, 25)">
+    <!-- Stage Container (270 x 400) -->
+    <rect width="270" height="400" rx="12" fill="url(#goldBoxGrad)" stroke="#f59e0b" stroke-width="1.5" stroke-dasharray="5,4"/>
+    <rect x="25" y="-13" width="220" height="26" rx="6" fill="#b45309" stroke="#f59e0b" stroke-width="1"/>
+    <text x="135" y="4" text-anchor="middle" fill="#ffffff" font-size="11.5" font-weight="700" letter-spacing="0.5">3. GOLD AGGREGATION</text>
+
+    <!-- Spark Gold Join (Centered at x=135, width=240) -->
+    <g filter="url(#shadow)" transform="translate(15, 25)">
+      <rect width="240" height="60" rx="7" fill="url(#cardGrad)" stroke="#f59e0b" stroke-width="1.2"/>
+      <text x="120" y="26" text-anchor="middle" fill="#ffffff" font-size="11.5" font-weight="700">PySpark Analytical Joins</text>
+      <text x="120" y="44" text-anchor="middle" fill="#ffffff" font-size="9">Merges on-pitch FPL stats</text>
+      <text x="120" y="55" text-anchor="middle" fill="#ffffff" font-size="8">with aggregated fan sentiment</text>
+    </g>
+
+    <!-- Spine Arrow (Gold) -->
+    <path d="M 135 85 L 135 110" fill="none" stroke="#f59e0b" stroke-width="1.5" marker-end="url(#markerGold)"/>
+
+    <!-- Gold Tables Stack (Centered at x=135, width=240) -->
+    <g filter="url(#shadow)" transform="translate(15, 115)">
+      <!-- Table 1 -->
+      <rect width="240" height="75" rx="6" fill="#18130a" stroke="#f59e0b" stroke-width="1"/>
+      <text x="120" y="26" text-anchor="middle" fill="#ffffff" font-size="11" font-weight="700">Gameweek Analytics</text>
+      <text x="120" y="46" text-anchor="middle" fill="#ffffff" font-size="9">Matchweek points, goals &amp; assists</text>
+      <text x="120" y="60" text-anchor="middle" fill="#ffffff" font-size="8.5">aligned with matchday sentiment</text>
+      
+      <!-- Table 2 -->
+      <g transform="translate(0, 90)">
+        <rect width="240" height="75" rx="6" fill="#18130a" stroke="#f59e0b" stroke-width="1"/>
+        <text x="120" y="26" text-anchor="middle" fill="#ffffff" font-size="11" font-weight="700">Daily Sentiment Timeline</text>
+        <text x="120" y="46" text-anchor="middle" fill="#ffffff" font-size="9">Inter-game sentiment trajectory</text>
+        <text x="120" y="60" text-anchor="middle" fill="#ffffff" font-size="8.5">and daily negative criticism volume</text>
+      </g>
+
+      <!-- Table 3 -->
+      <g transform="translate(0, 180)">
+        <rect width="240" height="75" rx="6" fill="#18130a" stroke="#f59e0b" stroke-width="1"/>
+        <text x="120" y="26" text-anchor="middle" fill="#ffffff" font-size="11" font-weight="700">Monthly &amp; Season Summaries</text>
+        <text x="120" y="46" text-anchor="middle" fill="#ffffff" font-size="9">Cross-campaign macro statistics,</text>
+        <text x="120" y="60" text-anchor="middle" fill="#ffffff" font-size="8.5">Pearson correlations &amp; p-values</text>
+      </g>
+    </g>
+  </g>
+
+  <!-- ==================== 4. SERVING & APPS ==================== -->
+  <g transform="translate(900, 25)">
+    <!-- Stage Container (270 x 400) -->
+    <rect width="270" height="400" rx="12" fill="url(#servingBoxGrad)" stroke="#38bdf8" stroke-width="1.5" stroke-dasharray="5,4"/>
+    <rect x="25" y="-13" width="220" height="26" rx="6" fill="#0369a1" stroke="#38bdf8" stroke-width="1"/>
+    <text x="135" y="4" text-anchor="middle" fill="#ffffff" font-size="11.5" font-weight="700" letter-spacing="0.5">4. SERVING &amp; APPS</text>
+
+    <!-- Databricks SQL Warehouse (Centered at x=135, width=240) -->
+    <g filter="url(#shadow)" transform="translate(15, 25)">
+      <rect width="240" height="120" rx="8" fill="#0c1a29" stroke="#38bdf8" stroke-width="1.5"/>
+      <text x="120" y="28" text-anchor="middle" fill="#ffffff" font-size="12" font-weight="700">Serverless SQL Warehouse</text>
+      <rect x="20" y="42" width="200" height="24" rx="4" fill="#061f38" stroke="#0284c7" stroke-width="1"/>
+      <text x="120" y="58" text-anchor="middle" fill="#ffffff" font-size="9.5" font-weight="600">Azure Databricks SQL Engine</text>
+      <text x="120" y="88" text-anchor="middle" fill="#ffffff" font-size="9">Instant, auto-scaling cloud compute</text>
+      <text x="120" y="104" text-anchor="middle" fill="#ffffff" font-size="9">executing sub-second analytical queries</text>
+    </g>
+
+    <!-- Connector Arrow (Serving Blue) -->
+    <path d="M 135 145 L 135 190" fill="none" stroke="#38bdf8" stroke-width="1.8" marker-end="url(#markerServing)"/>
+
+    <!-- Streamlit Dashboard (Centered at x=135, width=240) -->
+    <g filter="url(#shadow)" transform="translate(15, 195)">
+      <rect width="240" height="180" rx="8" fill="#1f1113" stroke="#ef4444" stroke-width="1.5"/>
+      <text x="120" y="28" text-anchor="middle" fill="#ffffff" font-size="12.5" font-weight="700">Streamlit Web Dashboard</text>
+      
+      <rect x="20" y="42" width="200" height="24" rx="4" fill="#380e12" stroke="#991b1b" stroke-width="1"/>
+      <text x="120" y="58" text-anchor="middle" fill="#ffffff" font-size="9.5" font-weight="600">Interactive Analytics Interface</text>
+
+      <text x="120" y="92" text-anchor="middle" fill="#ffffff" font-size="10" font-weight="700">Dual-Axis Trend Analysis</text>
+      <text x="120" y="110" text-anchor="middle" fill="#ffffff" font-size="9">Gameweek &amp; daily sentiment comparisons</text>
+
+      <line x1="25" y1="126" x2="215" y2="126" stroke="#7f1d1d" stroke-width="0.8"/>
+
+      <text x="120" y="148" text-anchor="middle" fill="#ffffff" font-size="10" font-weight="700">Correlation &amp; Cohort Views</text>
+      <text x="120" y="166" text-anchor="middle" fill="#ffffff" font-size="9">Dynamic heatmaps &amp; season filters</text>
+    </g>
+  </g>
+
+  <!-- ==================== CROSS-STAGE FLOW CONNECTORS ==================== -->
+
+  <!-- 1. Bronze Volume to Silver Spark ETL (BRONZE COLORED) -->
+  <path d="M 285 260 C 305 260, 300 80, 335 80" fill="none" stroke="#ea580c" stroke-width="2" marker-end="url(#markerBronze)"/>
+
+  <!-- 2. Silver Delta Table to Gold Join (SILVER COLORED) -->
+  <path d="M 575 295 C 595 295, 590 80, 625 80" fill="none" stroke="#94a3b8" stroke-width="2" marker-end="url(#markerSilver)"/>
+
+  <!-- 3. Gold Tables to SQL Warehouse (GOLD COLORED) -->
+  <path d="M 865 175 L 915 95" fill="none" stroke="#f59e0b" stroke-width="1.5" marker-end="url(#markerGold)"/>
+  <path d="M 865 265 L 915 105" fill="none" stroke="#f59e0b" stroke-width="1.5" marker-end="url(#markerGold)"/>
+  <path d="M 865 355 L 915 115" fill="none" stroke="#f59e0b" stroke-width="1.5" marker-end="url(#markerGold)"/>
+
+</svg>
