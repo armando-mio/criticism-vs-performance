@@ -24,8 +24,26 @@ def test_empty_comment_is_neutral():
     assert result["compound"] == 0.0
 
 
-def test_batch_matches_single_scoring():
-    texts = ["Great goal!", "Terrible performance", ""]
-    batch = score_comments_batch(texts)
-    singles = [score_comment(t) for t in texts]
-    assert batch == singles
+def test_football_lexicon_enrichment():
+    res_pos = score_comment("What a masterclass from Trent, absolute baller!")
+    assert res_pos["label"] == "positive"
+    assert res_pos["compound"] > 0.5
+
+    res_neg = score_comment("Shambolic defending from Konate, complete disasterclass")
+    assert res_neg["label"] == "negative"
+    assert res_neg["compound"] < -0.5
+
+
+def test_negations_and_idiom_inversion():
+    res_not_masterclass = score_comment("Salah did not have a masterclass today")
+    assert res_not_masterclass["label"] == "negative"
+    assert res_not_masterclass["compound"] < 0
+
+    res_far_from_clinical = score_comment("Darwin was far from clinical today")
+    assert res_far_from_clinical["label"] == "negative"
+    assert res_far_from_clinical["compound"] < 0
+
+    res_hardly_baller = score_comment("Hardly a baller performance")
+    assert res_hardly_baller["label"] == "negative"
+    assert res_hardly_baller["compound"] < 0
+

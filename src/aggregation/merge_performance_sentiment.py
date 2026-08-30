@@ -69,8 +69,9 @@ def aggregate_sentiment(tagged_comments_df: pd.DataFrame) -> pd.DataFrame:
     df["created_dt"] = pd.to_datetime(df["created_utc"], unit="s", utc=True)
     df["month"] = _month_key(df["created_dt"])
 
+    group_cols = ["player_id", "player_name", "month"] if "player_name" in df.columns else ["player_id", "month"]
     agg = (
-        df.groupby(["player_id", "month"])
+        df.groupby(group_cols)
         .agg(
             avg_sentiment=("sentiment_compound", "mean"),
             n_comments=("sentiment_compound", "count"),
@@ -85,28 +86,36 @@ def build_gold_dataset(
     performance_df: pd.DataFrame, sentiment_df: pd.DataFrame
 ) -> pd.DataFrame:
     merged = performance_df.merge(
-        sentiment_df, on=["player_id", "month"], how="outer"
+        sentiment_df, on=["player_id", "month"], how="outer", suffixes=("", "_sent")
     )
+    if "player_name_sent" in merged.columns:
+        merged["player_name"] = merged["player_name"].fillna(merged["player_name_sent"])
+        merged = merged.drop(columns=["player_name_sent"])
     merged = merged.sort_values(["player_id", "month"]).reset_index(drop=True)
     return merged
 
 
-def _gameweek_calendar(gameweeks_df):
+def _gameweek_calendar(gameweeks_df: pd.DataFrame) -> pd.DataFrame:
     df = gameweeks_df.copy()
     df["kickoff_time"] = pd.to_datetime(df["kickoff_time"], utc=True).astype("datetime64[ns, UTC]")
-    return (
+    cal = (
         df.groupby("round")["kickoff_time"]
         .min()
         .reset_index()
         .sort_values("round")
         .rename(columns={"kickoff_time": "gw_date"})
     )
+    # Temporal partitioning using midpoint between consecutive fixtures (handles midweek games without overlaps)
+    cal["prev_gw"] = cal["gw_date"].shift(1)
+    cal["window_start"] = cal["gw_date"] - (cal["gw_date"] - cal["prev_gw"]) / 2
+    min_r = cal["round"].min()
+    cal.loc[cal["round"] == min_r, "window_start"] = cal.loc[cal["round"] == min_r, "gw_date"] - pd.Timedelta(days=4)
+    return cal.drop(columns=["prev_gw"])
 
 
 def aggregate_performance_by_gameweek(gameweeks_df, teams_df=None):
     """teams_df: FPL teams.csv DataFrame (columns id, name) to resolve
-    opponent_team (numeric id) into a readable name. If omitted, the
-    'opponent' column is omitted."""
+    opponent_team (numeric id) into a readable name."""
     df = _clean_names(gameweeks_df)
     df["kickoff_time"] = pd.to_datetime(df["kickoff_time"], utc=True).astype("datetime64[ns, UTC]")
     agg = (
@@ -127,7 +136,23 @@ def aggregate_performance_by_gameweek(gameweeks_df, teams_df=None):
         id_to_name = dict(zip(teams_df["id"], teams_df["name"]))
         agg["opponent"] = agg["opponent_team"].map(id_to_name)
     agg = agg.drop(columns=["opponent_team"])
+
+    # Compute per-90 metrics (only for meaningful appearances >= 15 min, otherwise scaled)
+    agg["points_per_90"] = agg.apply(
+        lambda r: (r["total_points"] / (r["minutes"] / 90.0)) if r["minutes"] >= 15 else (float(r["total_points"]) if r["minutes"] > 0 else 0.0),
+        axis=1,
+    )
     return agg
+
+
+def _calc_weighted_sentiment(sub_df: pd.DataFrame) -> float:
+    if sub_df.empty:
+        return 0.0
+    if "score" in sub_df.columns:
+        # Weights bounded >= 1 to prevent negative/zero weights from silencing comments
+        weights = sub_df["score"].clip(lower=1).astype(float)
+        return float((sub_df["sentiment_compound"] * weights).sum() / weights.sum())
+    return float(sub_df["sentiment_compound"].mean())
 
 
 def aggregate_sentiment_by_gameweek(tagged_comments_df, gameweeks_df):
@@ -135,26 +160,83 @@ def aggregate_sentiment_by_gameweek(tagged_comments_df, gameweeks_df):
     comments["created_dt"] = pd.to_datetime(comments["created_utc"], unit="s", utc=True).astype("datetime64[ns, UTC]")
     calendar = _gameweek_calendar(gameweeks_df)
     comments = comments.sort_values("created_dt")
+    cal_sorted = calendar[["round", "gw_date", "window_start"]].sort_values("window_start")
     tagged_with_gw = pd.merge_asof(
-        comments, calendar.sort_values("gw_date"), left_on="created_dt", right_on="gw_date", direction="backward"
+        comments, cal_sorted, left_on="created_dt", right_on="window_start", direction="backward"
     )
     tagged_with_gw = tagged_with_gw.dropna(subset=["round"])
     tagged_with_gw["round"] = tagged_with_gw["round"].astype(int)
-    agg = (
-        tagged_with_gw.groupby(["player_id", "round"])
-        .agg(
-            avg_sentiment=("sentiment_compound", "mean"),
-            n_comments=("sentiment_compound", "count"),
-            negative_share=("sentiment_compound", lambda s: float((s <= -0.05).mean())),
-        )
-        .reset_index()
-    )
-    return agg
+
+    group_cols = ["player_id", "player_name", "round"] if "player_name" in tagged_with_gw.columns else ["player_id", "round"]
+    
+    records = []
+    for keys, group in tagged_with_gw.groupby(group_cols):
+        pid = keys[0] if isinstance(keys, tuple) else keys
+        pname = keys[1] if isinstance(keys, tuple) and len(keys) > 2 else None
+        rnd = keys[-1] if isinstance(keys, tuple) else None
+
+        n_tot = len(group)
+        avg_sent = float(group["sentiment_compound"].mean())
+        weighted_sent = _calc_weighted_sentiment(group)
+        neg_share = float((group["sentiment_compound"] <= -0.05).mean())
+        pos_share = float((group["sentiment_compound"] >= 0.05).mean())
+
+        # Pre vs Post match sentiment breakdown
+        pre_group = group[group["created_dt"] < group["gw_date"]]
+        post_group = group[group["created_dt"] >= group["gw_date"]]
+
+        pre_sent = float(pre_group["sentiment_compound"].mean()) if len(pre_group) > 0 else avg_sent
+        post_sent = float(post_group["sentiment_compound"].mean()) if len(post_group) > 0 else avg_sent
+
+        rec = {
+            "player_id": pid,
+            "round": rnd,
+            "avg_sentiment": avg_sent,
+            "weighted_sentiment": weighted_sent,
+            "n_comments": n_tot,
+            "negative_share": neg_share,
+            "positive_share": pos_share,
+            "pre_sentiment": pre_sent,
+            "post_sentiment": post_sent,
+            "n_comments_pre": len(pre_group),
+            "n_comments_post": len(post_group),
+            "low_sample_flag": (n_tot < 3),
+        }
+        if pname:
+            rec["player_name"] = pname
+        records.append(rec)
+
+    return pd.DataFrame(records)
 
 
 def build_gold_dataset_by_gameweek(performance_df, sentiment_df):
-    merged = performance_df.merge(sentiment_df, on=["player_id", "round"], how="outer")
+    merged = performance_df.merge(
+        sentiment_df, on=["player_id", "round"], how="outer", suffixes=("", "_sent")
+    )
+    if "player_name_sent" in merged.columns:
+        merged["player_name"] = merged["player_name"].fillna(merged["player_name_sent"])
+        merged = merged.drop(columns=["player_name_sent"])
+
+    # Calculate standardized Z-scores (per season) for direct statistical comparability
+    if not merged.empty:
+        pts = merged["total_points"].dropna()
+        if len(pts) > 1 and pts.std() > 0:
+            merged["points_zscore"] = (merged["total_points"] - pts.mean()) / pts.std()
+        else:
+            merged["points_zscore"] = 0.0
+
+        sent = merged["avg_sentiment"].dropna()
+        if len(sent) > 1 and sent.std() > 0:
+            merged["sentiment_zscore"] = (merged["avg_sentiment"] - sent.mean()) / sent.std()
+        else:
+            merged["sentiment_zscore"] = 0.0
+
+        # Divergence / Scapegoat Index: sentiment_zscore - points_zscore
+        merged["divergence_zscore"] = merged["sentiment_zscore"] - merged["points_zscore"]
+
     return merged.sort_values(["player_id", "round"]).reset_index(drop=True)
+
+
 
 
 def aggregate_sentiment_by_day(tagged_comments_df):

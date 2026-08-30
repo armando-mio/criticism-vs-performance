@@ -46,3 +46,40 @@ def test_build_gold_dataset_outer_join_keeps_unmatched_rows():
     # both rows must survive, even if they do not share a key
     assert len(gold) == 2
     assert set(gold["player_id"]) == {1, 2}
+
+
+def test_gameweek_aggregation_and_zscores():
+    from src.aggregation.merge_performance_sentiment import (
+        _gameweek_calendar,
+        aggregate_sentiment_by_gameweek,
+        build_gold_dataset_by_gameweek,
+    )
+
+    gws_df = pd.DataFrame(
+        [
+            {"element": 1, "name": "Salah", "round": 1, "kickoff_time": "2024-08-17T12:00:00Z", "total_points": 10, "minutes": 90, "goals_scored": 1, "assists": 0, "opponent_team": 2, "was_home": True},
+            {"element": 1, "name": "Salah", "round": 2, "kickoff_time": "2024-08-25T12:00:00Z", "total_points": 2, "minutes": 90, "goals_scored": 0, "assists": 0, "opponent_team": 3, "was_home": False},
+        ]
+    )
+    cal = _gameweek_calendar(gws_df)
+    assert len(cal) == 2
+    assert "window_start" in cal.columns
+
+    # Test pre-match and post-match comments with upvote scores
+    comments_df = pd.DataFrame(
+        [
+            {"player_id": 1, "player_name": "Salah", "created_utc": 1723895000, "sentiment_compound": 0.5, "score": 10},
+            {"player_id": 1, "player_name": "Salah", "created_utc": 1723900000, "sentiment_compound": 0.8, "score": 20},
+        ]
+    )
+    sent_gw = aggregate_sentiment_by_gameweek(comments_df, gws_df)
+    assert len(sent_gw) >= 1
+    assert "weighted_sentiment" in sent_gw.columns
+    assert "pre_sentiment" in sent_gw.columns
+
+    perf_gw = gws_df.rename(columns={"element": "player_id", "name": "player_name"}).drop(columns=["opponent_team"])
+    gold_gw = build_gold_dataset_by_gameweek(perf_gw, sent_gw)
+    assert "points_zscore" in gold_gw.columns
+    assert "sentiment_zscore" in gold_gw.columns
+    assert "divergence_zscore" in gold_gw.columns
+

@@ -21,8 +21,43 @@ from dataclasses import dataclass, field
 import pandas as pd
 from rapidfuzz import fuzz
 
+import unicodedata
+
 MIN_FUZZY_ALIAS_LEN = 4
 FUZZY_THRESHOLD = 88
+
+# Unambiguous nicknames and aliases for Liverpool squad
+DEFAULT_LIVERPOOL_ALIASES: dict[str, list[str]] = {
+    "M.Salah": ["mo salah", "salah", "the egyptian king", "egyptian king"],
+    "Salah": ["mo salah", "salah", "the egyptian king", "egyptian king"],
+    "A.Becker": ["alisson", "becker", "alisson becker"],
+    "Alexander-Arnold": ["trent", "trent alexander-arnold", "taa", "alexander arnold"],
+    "Virgil": ["virgil", "van dijk", "vvd", "virgil van dijk"],
+    "Darwin": ["darwin", "nunez", "núñez", "darwin nunez", "darwin núñez"],
+    "Diogo J.": ["jota", "diogo jota", "diogo j"],
+    "Luis Díaz": ["luis diaz", "luis díaz", "diaz", "díaz", "lucho"],
+    "Mac Allister": ["mac allister", "macca", "alexis mac allister"],
+    "Szoboszlai": ["szoboszlai", "szobo", "dominik szoboszlai"],
+    "Gravenberch": ["gravenberch", "ryan gravenberch"],
+    "Konaté": ["konate", "konaté", "ibou", "ibrahima konate", "ibrahima konaté"],
+    "Gakpo": ["gakpo", "cody gakpo"],
+    "Robertson": ["robertson", "robbo", "andy robertson"],
+    "Jones": ["curtis", "curtis jones"],
+    "C.Jones": ["curtis", "curtis jones"],
+    "Elliott": ["elliott", "harvey elliott"],
+    "Endo": ["endo", "wataru endo"],
+    "Gomez": ["joe gomez"],
+    "Bradley": ["conor bradley", "bradley"],
+    "Tsimikas": ["tsimikas", "kostas", "greek scouser"],
+    "Kelleher": ["kelleher", "caoimhin", "kweev"],
+    "Quansah": ["quansah", "jarell quansah"],
+    "Chiesa": ["chiesa", "federico chiesa"],
+    "Wirtz": ["wirtz", "florian wirtz", "flo wirtz"],
+    "Isak": ["isak", "alexander isak"],
+    "Frimpong": ["frimpong", "jeremie frimpong"],
+    "Kerkez": ["kerkez", "milos kerkez"],
+    "Slot": ["arne slot", "slot"],
+}
 
 
 @dataclass
@@ -36,11 +71,16 @@ class PlayerAliasIndex:
         return [(pid, alias) for pid, al_set in self.aliases.items() for alias in al_set]
 
 
+def _strip_accents(text: str) -> str:
+    """Removes diacritics / accents from text (e.g. Núñez -> Nunez)."""
+    return "".join(
+        c for c in unicodedata.normalize("NFD", text) if unicodedata.category(c) != "Mn"
+    )
+
+
 def _clean(name: str) -> str:
     text = re.sub(r"\s+", " ", str(name)).strip().lower()
-    # strip leading/trailing punctuation (e.g. "Diogo J." -> "diogo j"):
-    # if an alias ends with a non-alphanumeric character, the word-boundary
-    # \b in regex matching will not trigger and the alias will never match
+    # strip leading/trailing punctuation
     return text.strip(".-'")
 
 
@@ -55,32 +95,70 @@ def build_alias_index(
         {"Salah": ["mo salah", "the egyptian king"]}
     """
     idx = PlayerAliasIndex()
-    custom_aliases = custom_aliases or {}
+    combined_custom = dict(DEFAULT_LIVERPOOL_ALIASES)
+    if custom_aliases:
+        for k, v in custom_aliases.items():
+            if k in combined_custom:
+                combined_custom[k] = list(set(combined_custom[k] + v))
+            else:
+                combined_custom[k] = v
+
+    # Common generic words/names that should not be used as standalone single-token aliases
+    GENERIC_TOKENS = {
+        "will", "ben", "joe", "harvey", "james", "ryan", "conor", "calvin",
+        "mo", "ali", "dom", "dan", "rob", "lee", "sam", "tony", "may", "long", "short"
+    }
 
     for _, row in players_df.iterrows():
         pid = int(row["id"])
         web_name = str(row["web_name"])
-        aliases = {_clean(web_name)}
+        raw_aliases = set()
 
-        if "first_name" in row and "second_name" in row:
-            full_name = f"{row['first_name']} {row['second_name']}"
-            aliases.add(_clean(full_name))
-            if pd.notna(row.get("second_name")):
-                aliases.add(_clean(row["second_name"]))
+        raw_aliases.add(web_name)
+        raw_aliases.add(_strip_accents(web_name))
 
-        for extra in custom_aliases.get(web_name, []):
-            aliases.add(_clean(extra))
+        first = str(row.get("first_name", "")) if pd.notna(row.get("first_name")) else ""
+        second = str(row.get("second_name", "")) if pd.notna(row.get("second_name")) else ""
 
-        # discard aliases that are too short/generic (e.g. 2-letter surnames)
-        aliases = {a for a in aliases if len(a) >= 3}
+        if first and second:
+            raw_aliases.add(f"{first} {second}")
+            raw_aliases.add(_strip_accents(f"{first} {second}"))
+
+        if second:
+            raw_aliases.add(second)
+            raw_aliases.add(_strip_accents(second))
+            # Split compound surnames (e.g. "Núñez Ribeiro" -> "Núñez", "Ribeiro")
+            for part in second.split():
+                if len(part) >= 3 and part.lower() not in GENERIC_TOKENS:
+                    raw_aliases.add(part)
+                    raw_aliases.add(_strip_accents(part))
+
+        if first and len(first) >= 3 and first.lower() not in GENERIC_TOKENS:
+            raw_aliases.add(first)
+            raw_aliases.add(_strip_accents(first))
+
+        # Check default / custom aliases matching web_name or second_name or first_name
+        for lookup_key in [web_name, second, first, f"{first} {second}"]:
+            if lookup_key in combined_custom:
+                for extra in combined_custom[lookup_key]:
+                    raw_aliases.add(extra)
+                    raw_aliases.add(_strip_accents(extra))
+
+        cleaned_aliases = set()
+        for a in raw_aliases:
+            cl = _clean(a)
+            if len(cl) >= 3 and cl not in GENERIC_TOKENS and cl not in {"in", "at", "on", "to", "he", "is", "a", "an", "the"}:
+                cleaned_aliases.add(cl)
 
         if pid in idx.aliases:
-            idx.aliases[pid] |= aliases
+            idx.aliases[pid] |= cleaned_aliases
         else:
-            idx.aliases[pid] = aliases
+            idx.aliases[pid] = cleaned_aliases
             idx.display_name[pid] = web_name
 
     return idx
+
+
 
 
 def match_players(
