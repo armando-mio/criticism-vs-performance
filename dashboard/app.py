@@ -43,26 +43,13 @@ def _friendly_error_message(exc: Exception) -> str:
 
 @st.cache_data(ttl=3600)
 def load_gold_data(table_name: str) -> pd.DataFrame:
-    # Try Databricks if credentials are configured
-    if all(os.getenv(k) for k in ["DATABRICKS_SERVER_HOSTNAME", "DATABRICKS_HTTP_PATH", "DATABRICKS_TOKEN"]):
-        try:
-            with sql.connect(
-                server_hostname=os.environ["DATABRICKS_SERVER_HOSTNAME"],
-                http_path=os.environ["DATABRICKS_HTTP_PATH"],
-                access_token=os.environ["DATABRICKS_TOKEN"],
-            ) as conn:
-                with conn.cursor() as cur:
-                    cur.execute(f"SELECT * FROM performance_vs_toxicity.gold.{table_name}")
-                    return cur.fetchall_arrow().to_pandas()
-        except Exception as exc:
-            pass
-
-    # Fallback to local Gold CSV datasets
+    # 1. Primary: Load directly from local Gold datasets (instant, offline-capable, zero cloud costs)
+    repo_root = Path(__file__).resolve().parents[1]
     cfg = load_config()
     seasons = season_ids(cfg)
     frames = []
     for s in seasons:
-        csv_path = Path("data/gold") / s / f"{table_name}.csv"
+        csv_path = repo_root / "data" / "gold" / s / f"{table_name}.csv"
         if csv_path.exists():
             df = pd.read_csv(csv_path)
             if "season" not in df.columns:
@@ -70,6 +57,22 @@ def load_gold_data(table_name: str) -> pd.DataFrame:
             frames.append(df)
     if frames:
         return pd.concat(frames, ignore_index=True)
+
+    # 2. Optional: Connect to Databricks if local files are missing + credentials exist + you have credit
+    if all(os.getenv(k) for k in ["DATABRICKS_SERVER_HOSTNAME", "DATABRICKS_HTTP_PATH", "DATABRICKS_TOKEN"]):
+        try:
+            with sql.connect(
+                server_hostname=os.environ["DATABRICKS_SERVER_HOSTNAME"],
+                http_path=os.environ["DATABRICKS_HTTP_PATH"],
+                access_token=os.environ["DATABRICKS_TOKEN"],
+                _connect_timeout=5,
+            ) as conn:
+                with conn.cursor() as cur:
+                    cur.execute(f"SELECT * FROM performance_vs_toxicity.gold.{table_name}")
+                    return cur.fetchall_arrow().to_pandas()
+        except Exception:
+            pass
+
     return pd.DataFrame()
 
 

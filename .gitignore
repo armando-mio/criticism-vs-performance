@@ -9,5 +9,6 @@ venv/
 data/raw/reddit/*/comments.jsonl
 data/raw/fpl/*/*.csv
 data/silver/*/*.csv
-data/gold/*/*.csv
+# Gold tables are committed to allow the dashboard to run without Databricks
+# data/gold/*/*.csv
 !data/**/.gitkeep
