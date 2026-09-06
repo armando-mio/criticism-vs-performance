@@ -1,0 +1,153 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 360" width="960" height="360">
+  <defs>
+    <!-- Background styling -->
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#F8FAFC"/>
+      <stop offset="100%" stop-color="#EDF2F7"/>
+    </linearGradient>
+
+    <!-- Card Gradients -->
+    <linearGradient id="cardRed" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#C8102E"/>
+      <stop offset="100%" stop-color="#9B0D23"/>
+    </linearGradient>
+    <linearGradient id="cardAmber" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#D97706"/>
+      <stop offset="100%" stop-color="#B45309"/>
+    </linearGradient>
+    <linearGradient id="cardNavy" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0F172A"/>
+      <stop offset="100%" stop-color="#1E293B"/>
+    </linearGradient>
+    <linearGradient id="cardEmerald" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#059669"/>
+      <stop offset="100%" stop-color="#047857"/>
+    </linearGradient>
+    <linearGradient id="cardCrimson" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#BE123C"/>
+      <stop offset="100%" stop-color="#881337"/>
+    </linearGradient>
+
+    <!-- Shadows -->
+    <filter id="softShadow" x="-10%" y="-10%" width="120%" height="125%">
+      <feDropShadow dx="0" dy="6" stdDeviation="6" flood-color="#0F172A" flood-opacity="0.10"/>
+    </filter>
+    <filter id="centerShadow" x="-10%" y="-10%" width="120%" height="125%">
+      <feDropShadow dx="0" dy="8" stdDeviation="8" flood-color="#0F172A" flood-opacity="0.16"/>
+    </filter>
+  </defs>
+
+  <style>
+    .card-title { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; font-size: 13.5px; font-weight: 700; fill: #FFFFFF; text-anchor: middle; dominant-baseline: central; letter-spacing: 0.3px; }
+    .card-body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; font-size: 11px; font-weight: 400; fill: #E2E8F0; text-anchor: middle; dominant-baseline: central; }
+    .card-body-bold { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; font-size: 11px; font-weight: 600; fill: #FFFFFF; text-anchor: middle; dominant-baseline: central; }
+    .badge-text { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; font-size: 10px; font-weight: 700; fill: #0F172A; text-anchor: middle; dominant-baseline: central; }
+    .flow-line { stroke: #64748B; stroke-width: 2.2; fill: none; }
+    .flow-line-accent { stroke: #0F172A; stroke-width: 2.5; fill: none; }
+    .flow-arrow { fill: #0F172A; }
+    .flow-tag { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; font-size: 10.5px; font-weight: 700; fill: #334155; text-anchor: middle; dominant-baseline: central; }
+  </style>
+
+  <!-- Background Canvas -->
+  <rect width="100%" height="100%" fill="url(#bgGrad)" rx="16"/>
+  <rect width="958" height="358" x="1" y="1" fill="none" stroke="#CBD5E1" stroke-width="1.5" rx="15"/>
+
+  <!-- ==================== LEFT NODES ==================== -->
+
+  <!-- Node 1: On-Pitch Reality (Top Left) -->
+  <g transform="translate(45, 45)" filter="url(#softShadow)">
+    <rect width="220" height="105" rx="10" fill="url(#cardRed)"/>
+    <!-- Header Pill -->
+    <rect x="25" y="12" width="170" height="26" rx="6" fill="rgba(0,0,0,0.22)"/>
+    <text x="110" y="25" class="card-title">On-Pitch Reality</text>
+    <line x1="20" y1="46" x2="200" y2="46" stroke="rgba(255,255,255,0.25)" stroke-width="1"/>
+    <!-- Centered Body Text -->
+    <text x="110" y="62" class="card-body-bold">FPL Points · Goals · Assists</text>
+    <text x="110" y="78" class="card-body">Minutes Played · xG / xA</text>
+    <text x="110" y="93" class="card-body">Match Result &amp; Home/Away</text>
+  </g>
+
+  <!-- Node 2: Narrative Bias (Bottom Left) -->
+  <g transform="translate(45, 205)" filter="url(#softShadow)">
+    <rect width="220" height="105" rx="10" fill="url(#cardAmber)"/>
+    <!-- Header Pill -->
+    <rect x="25" y="12" width="170" height="26" rx="6" fill="rgba(0,0,0,0.22)"/>
+    <text x="110" y="25" class="card-title">Narrative &amp; Bias</text>
+    <line x1="20" y1="46" x2="200" y2="46" stroke="rgba(255,255,255,0.25)" stroke-width="1"/>
+    <!-- Centered Body Text -->
+    <text x="110" y="62" class="card-body-bold">Transfer Fees &amp; Fan Hype</text>
+    <text x="110" y="78" class="card-body">Tactical Role Scrutiny</text>
+    <text x="110" y="93" class="card-body">Team Momentum Expectations</text>
+  </g>
+
+  <!-- ==================== CENTER ENGINE ==================== -->
+
+  <!-- Node 3: Fan Sentiment Engine (Center) -->
+  <g transform="translate(365, 110)" filter="url(#centerShadow)">
+    <rect width="230" height="135" rx="14" fill="url(#cardNavy)"/>
+    <rect width="228" height="133" x="1" y="1" fill="none" stroke="#38BDF8" stroke-width="1.5" rx="13" opacity="0.6"/>
+    <!-- Header Pill -->
+    <rect x="20" y="14" width="190" height="28" rx="6" fill="#1E293B"/>
+    <text x="115" y="28" class="card-title">Fan Sentiment Engine</text>
+    <line x1="20" y1="50" x2="210" y2="50" stroke="rgba(255,255,255,0.2)" stroke-width="1"/>
+    <!-- Centered Body Lines -->
+    <text x="115" y="68" class="card-body-bold">VADER + Football Lexicon</text>
+    <text x="115" y="85" class="card-body">Idiomatic Negation Inversion</text>
+    <text x="115" y="102" class="card-body">Voronoi Midpoint Windows</text>
+    <text x="115" y="119" class="card-body">Upvote-Weighted Scoring</text>
+  </g>
+
+  <!-- ==================== RIGHT NODES ==================== -->
+
+  <!-- Node 4: Fan Darlings (Top Right) -->
+  <g transform="translate(695, 45)" filter="url(#softShadow)">
+    <rect width="220" height="105" rx="10" fill="url(#cardEmerald)"/>
+    <!-- Header Pill -->
+    <rect x="20" y="12" width="180" height="26" rx="6" fill="rgba(0,0,0,0.22)"/>
+    <text x="110" y="25" class="card-title">Fan Darlings (ΔZ &gt; 0)</text>
+    <line x1="20" y1="46" x2="200" y2="46" stroke="rgba(255,255,255,0.25)" stroke-width="1"/>
+    <!-- Centered Body Text -->
+    <text x="110" y="62" class="card-body-bold">Protected / Elevated Praise</text>
+    <text x="110" y="78" class="card-body">Positive Emotional Surplus</text>
+    <text x="110" y="93" class="card-body">Immunity to Output Slumps</text>
+  </g>
+
+  <!-- Node 5: Scapegoats (Bottom Right) -->
+  <g transform="translate(695, 205)" filter="url(#softShadow)">
+    <rect width="220" height="105" rx="10" fill="url(#cardCrimson)"/>
+    <!-- Header Pill -->
+    <rect x="20" y="12" width="180" height="26" rx="6" fill="rgba(0,0,0,0.22)"/>
+    <text x="110" y="25" class="card-title">Scapegoats (ΔZ &lt; 0)</text>
+    <line x1="20" y1="46" x2="200" y2="46" stroke="rgba(255,255,255,0.25)" stroke-width="1"/>
+    <!-- Centered Body Text -->
+    <text x="110" y="62" class="card-body-bold">Hyper-Criticized / Scrutinized</text>
+    <text x="110" y="78" class="card-body">Disproportionate Blame</text>
+    <text x="110" y="93" class="card-body">High Criticism Deficit</text>
+  </g>
+
+  <!-- ==================== CONNECTING FLOWS ==================== -->
+
+  <!-- Top-Left to Center -->
+  <path d="M 265 97 C 315 97, 315 155, 365 155" class="flow-line-accent"/>
+  <polygon points="365,155 355,149 355,161" class="flow-arrow"/>
+  <rect x="282" y="108" width="66" height="22" rx="5" fill="#E2E8F0" stroke="#94A3B8" stroke-width="1"/>
+  <text x="315" y="119" class="flow-tag">r = +0.31</text>
+
+  <!-- Bottom-Left to Center -->
+  <path d="M 265 257 C 315 257, 315 200, 365 200" class="flow-line-accent"/>
+  <polygon points="365,200 355,194 355,206" class="flow-arrow"/>
+  <rect x="280" y="222" width="70" height="22" rx="5" fill="#E2E8F0" stroke="#94A3B8" stroke-width="1"/>
+  <text x="315" y="233" class="flow-tag">Bias Offset</text>
+
+  <!-- Center to Top-Right -->
+  <path d="M 595 155 C 645 155, 645 97, 695 97" class="flow-line-accent"/>
+  <polygon points="695,97 685,91 685,103" class="flow-arrow"/>
+  <rect x="612" y="108" width="68" height="22" rx="5" fill="#DCFCE7" stroke="#86EFAC" stroke-width="1"/>
+  <text x="646" y="119" class="flow-tag" fill="#166534">Surplus ΔZ</text>
+
+  <!-- Center to Bottom-Right -->
+  <path d="M 595 200 C 645 200, 645 257, 695 257" class="flow-line-accent"/>
+  <polygon points="695,257 685,251 685,263" class="flow-arrow"/>
+  <rect x="612" y="222" width="68" height="22" rx="5" fill="#FEE2E2" stroke="#FCA5A5" stroke-width="1"/>
+  <text x="646" y="233" class="flow-tag" fill="#991B1B">Deficit ΔZ</text>
+</svg>

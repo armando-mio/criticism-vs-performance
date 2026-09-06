@@ -1,0 +1,80 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 940 220" width="940" height="220">
+  <defs>
+    <linearGradient id="gBronze" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#A9714B"/>
+      <stop offset="100%" stop-color="#8C502E"/>
+    </linearGradient>
+    <linearGradient id="gSilver" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#708090"/>
+      <stop offset="100%" stop-color="#4A5568"/>
+    </linearGradient>
+    <linearGradient id="gGold" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#D4AF37"/>
+      <stop offset="100%" stop-color="#AA820A"/>
+    </linearGradient>
+    <filter id="boxShadow" x="-5%" y="-5%" width="110%" height="115%" filterUnits="userSpaceOnUse">
+      <feDropShadow dx="0" dy="4" stdDeviation="4" flood-opacity="0.12"/>
+    </filter>
+  </defs>
+
+  <style>
+    .t-stage { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; font-size: 13px; font-weight: 700; fill: #ffffff; text-anchor: middle; dominant-baseline: central; }
+    .t-sub { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; font-size: 11px; fill: rgba(255,255,255,0.92); text-anchor: middle; dominant-baseline: central; }
+    .arrow-pipe { stroke: #0B2239; stroke-width: 2.5; fill: none; }
+    .poly-head { fill: #0B2239; }
+  </style>
+
+  <!-- Stage 1: Bronze (Raw Ingestion) -->
+  <g transform="translate(20, 30)" filter="url(#boxShadow)">
+    <rect width="195" height="155" rx="10" fill="url(#gBronze)"/>
+    <text x="97.5" y="26" class="t-stage">1. Bronze (Raw)</text>
+    <line x1="20" y1="42" x2="175" y2="42" stroke="rgba(255,255,255,0.3)" stroke-width="1"/>
+    <text x="97.5" y="64" class="t-sub">FPL Matchweeks (CSV)</text>
+    <text x="97.5" y="86" class="t-sub">Official Squad Rosters</text>
+    <text x="97.5" y="108" class="t-sub">Reddit Dumps (JSONL)</text>
+    <text x="97.5" y="130" class="t-sub">Unity Catalog Volume</text>
+  </g>
+
+  <!-- Stage 2: Silver (NLP & Entity Matching) -->
+  <g transform="translate(260, 30)" filter="url(#boxShadow)">
+    <rect width="195" height="155" rx="10" fill="url(#gSilver)"/>
+    <text x="97.5" y="26" class="t-stage">2. Silver (Transform)</text>
+    <line x1="20" y1="42" x2="175" y2="42" stroke="rgba(255,255,255,0.3)" stroke-width="1"/>
+    <text x="97.5" y="64" class="t-sub">Player Entity Resolution</text>
+    <text x="97.5" y="86" class="t-sub">Nicknames &amp; Diacritics</text>
+    <text x="97.5" y="108" class="t-sub">VADER Football Lexicon</text>
+    <text x="97.5" y="130" class="t-sub">silver.tagged_comments</text>
+  </g>
+
+  <!-- Stage 3: Gold (Statistical Metrics) -->
+  <g transform="translate(500, 30)" filter="url(#boxShadow)">
+    <rect width="195" height="155" rx="10" fill="url(#gGold)"/>
+    <text x="97.5" y="26" class="t-stage">3. Gold (Aggregate)</text>
+    <line x1="20" y1="42" x2="175" y2="42" stroke="rgba(255,255,255,0.3)" stroke-width="1"/>
+    <text x="97.5" y="64" class="t-sub">Voronoi Midpoint Windows</text>
+    <text x="97.5" y="86" class="t-sub">Z-Score &amp; Divergence (ΔZ)</text>
+    <text x="97.5" y="108" class="t-sub">Upvote-Weighted Sentiment</text>
+    <text x="97.5" y="130" class="t-sub">Delta Lake Gold Tables</text>
+  </g>
+
+  <!-- Stage 4: Serving & Visualization (Solid Blue #1E88E5) -->
+  <g transform="translate(740, 30)" filter="url(#boxShadow)">
+    <rect width="180" height="155" rx="10" fill="#1E88E5"/>
+    <text x="90" y="26" class="t-stage">4. Serving</text>
+    <line x1="20" y1="42" x2="160" y2="42" stroke="rgba(255,255,255,0.3)" stroke-width="1"/>
+    <text x="90" y="64" class="t-sub">Databricks SQL</text>
+    <text x="90" y="86" class="t-sub">Streamlit Web App</text>
+    <text x="90" y="108" class="t-sub">Dual-Axis Plotly Charts</text>
+    <text x="90" y="130" class="t-sub">Analytical Report</text>
+  </g>
+
+  <!-- Flow Arrows -->
+  <path d="M 215 107 L 260 107" class="arrow-pipe"/>
+  <polygon points="260,107 252,102 252,112" class="poly-head"/>
+
+  <path d="M 455 107 L 500 107" class="arrow-pipe"/>
+  <polygon points="500,107 492,102 492,112" class="poly-head"/>
+
+  <path d="M 695 107 L 740 107" class="arrow-pipe"/>
+  <polygon points="740,107 732,102 732,112" class="poly-head"/>
+</svg>
