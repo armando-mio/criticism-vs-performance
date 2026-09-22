@@ -50,11 +50,11 @@ Understanding the interaction between social media commentary and athlete perfor
 - **Lightning Rods ($\Delta Z \ll 0$)**: Specific regular starters carry heavy criticism burdens relative to their statistical output during adverse team runs.
 
 ### 3. Pre-Match Expectations vs. Post-Match Reactions
-- **Expectation vs. Evaluation**: Pre-match sentiment reflects tactical optimism ($\mu = +0.09$), while post-match sentiment reacts sharply to match events ($\mu = +0.10$).
+- **Expectation vs. Evaluation**: Pre-match sentiment reflects tactical optimism ($\\mu = +0.09$), while post-match sentiment reacts sharply to match events ($\\mu = +0.10$).
 - **Volatility Explosion**: Post-match variance is $1.8\times$ higher than pre-match discussion, highlighting post-game emotional amplification.
 
 ### 4. Noise Dampening via Upvote Weighting
-- **Consensus Stabilization**: Upvote-weighted scoring gives greater weight to community-endorsed opinions ($\ge 3$ upvotes), reducing outlier noise.
+- **Consensus Stabilization**: Upvote-weighted scoring gives greater weight to community-endorsed opinions ($\\ge 3$ upvotes), reducing outlier noise.
 - **Low-Sample Filter**: Flagging observations with $N < 3$ mentions removes $82\%$ of erratic sentiment spikes without discarding valid matchday data.
 
 ### 5. Squad Hierarchy & Scrutiny Across Campaigns
@@ -77,9 +77,9 @@ Understanding the interaction between social media commentary and athlete perfor
 
 | Concept | Mathematical Formula | Description |
 | :--- | :--- | :--- |
-| **Standardized Z-Score** | $Z_{\text{pts}} = \frac{x - \mu_{\text{pts}}}{\sigma_{\text{pts}}}, \quad Z_{\text{sent}} = \frac{s - \mu_{\text{sent}}}{\sigma_{\text{sent}}}$ | Normalizes heterogeneous scales to zero mean and unit variance. |
+| **Standardized Z-Score** | $Z_{\text{pts}} = \frac{x - \\mu_{\text{pts}}}{\sigma_{\text{pts}}}, \quad Z_{\text{sent}} = \frac{s - \\mu_{\text{sent}}}{\sigma_{\text{sent}}}$ | Normalizes heterogeneous scales to zero mean and unit variance. |
 | **Divergence Index** | $\Delta Z = Z_{\text{sent}} - Z_{\text{pts}}$ | Measures disparity between fan sentiment and on-pitch performance. |
-| **Weighted Sentiment** | $\text{WS} = \frac{\sum_{i=1}^{N} s_i \cdot \max(w_i, 1)}{\sum_{i=1}^{N} \max(w_i, 1)}$ | Weights comment sentiment by Reddit upvotes $w_i$. |
+| **Weighted Sentiment** | $\text{WS} = \frac{\sum_{i=1}^{N} s_i \cdot \\max(w_i, 1)}{\sum_{i=1}^{N} \\max(w_i, 1)}$ | Weights comment sentiment by Reddit upvotes $w_i$. |
 | **Voronoi Window** | $\text{start}_k = \text{kickoff}_k - \frac{\text{kickoff}_k - \text{kickoff}_{k-1}}{2}$ | Dynamic midpoint window preventing overlaps between midweek fixtures. |
 
 ---
@@ -98,13 +98,18 @@ Understanding the interaction between social media commentary and athlete perfor
 ![Z-Score Quadrants](figures/03_zscore_divergence_quadrants.png)
 *Four-quadrant matrix mapping standardized performance ($Z_{\text{pts}}$) against standardized sentiment ($Z_{\text{sent}}$).*
 
-### 4. Inter-Metric Correlation Matrix
+### 4. Inter-Metric Correlation Matrix & Differential Decoupling Analysis
 ![Correlation Heatmap](figures/04_correlation_matrix_heatmap.png)
-*Heatmap showing correlation coefficients between on-pitch statistics and sentiment metrics.*
+*Three-panel correlation matrices comparing metric associations in the 2024-25 title season, the 2025-26 fifth-place season, and the differential shift matrix ($\Delta r = r_{\text{2025-26}} - r_{\text{2024-25}}$) revealing inter-metric decoupling.*
+
+> [!IMPORTANT]
+> **Tactical Decoupling Finding — Goals vs. Assists Breakdown ($\Delta r = -0.21$)**:  
+> In the title-winning 2024-25 season, individual goals and assists shared a solid positive correlation ($r = +0.27$, $p < 0.01$), capturing fluid, choreographed attacking combinations where goals were systematically generated through assisted team buildup. In the 2025-26 fifth-place season, this association collapsed to near zero ($r = +0.06$, representing an inter-season drop of $\Delta r = -0.21$, boxed in black on the differential matrix).  
+> This breakdown marks a critical statistical signature of tactical dysfunction: during the crisis campaign, offensive output decoupled from collective playmaking, with goals arising from isolated solo efforts, deflected shots, unassisted rebounds, and set-piece scrambles rather than structured team patterns.
 
 ### 5. Longitudinal Gameweek Trajectory
 ![Gameweek Trajectory](figures/05_gameweek_trajectories.png)
-*Longitudinal tracking of team FPL points, raw sentiment, and upvote-weighted sentiment across 38 gameweeks.*
+*Standardized longitudinal tracking ($Z$-score scale) of team FPL points, raw sentiment, and upvote-weighted sentiment across 38 gameweeks, highlighting regions of fan praise surplus vs criticism surplus.*
 
 ### 6. Pre vs. Post Match Dynamics
 ![Pre vs Post Dynamics](figures/06_pre_vs_post_match_dynamics.png)
